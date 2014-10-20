@@ -1,6 +1,7 @@
 LBS云短租示例
 
 文件目录结构
+
 --js                  js文件的存放目录
 
 ----bootstrap.js
