@@ -84,19 +84,19 @@ var Util = {
                     keyword += '$' + mQueryInfo.prefer[key][i];
                 }
 
-                $.getJSON('/position/query', {
+                $.getJSON('/nearby/query', {
                     query: encodeURIComponent(keyword),
                     location: '40.004179,116.351633',
                     radius: 1000
                 }, function (data) {
                     if (data.status == BMAP_STATUS_SUCCESS) {
                         console.log(data);
-                        alert("total:" + data.total);
+                        alert(key + " - 总数目:" + data.total);
                     } else {
-                        alert("ERROR:" + data.message);
+                        alert("ERROR: " + data.message);
                     }
                 }).fail(function () {
-                    alert("$.get() error");
+                    alert("nearby search service error!");
                 });
 
             }
