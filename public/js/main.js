@@ -85,13 +85,14 @@ var Util = {
                 }
 
                 $.getJSON('/nearby/query', {
+                    type: key,
                     query: encodeURIComponent(keyword),
                     location: '40.004179,116.351633',
                     radius: 1000
                 }, function (data) {
                     if (data.status == BMAP_STATUS_SUCCESS) {
                         console.log(data);
-                        alert(key + " - 总数目:" + data.total);
+                        alert(data.type + " - 总数目:" + data.total);
                     } else {
                         alert("ERROR: " + data.message);
                     }

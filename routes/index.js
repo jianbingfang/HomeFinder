@@ -1,5 +1,5 @@
 var express = require('express');
-var nodegrass = require('nodegrass');
+var mapService = require('../src/service/mapService')
 
 var router = express.Router();
 
@@ -17,24 +17,22 @@ router.get('/nearby/query', function (req, res) {
     var keyword = req.query.query;
     var location = req.query.location;
 
-    /** 百度地图web服务查询url */
-    var url = "http://api.map.baidu.com/place/v2/search?" +
-        "ak=Wu85qkU4ZK6bH3fcNhp453dL&output=json" +
-        "&page_size=10&page_num=0&scope=1&radius=" + radius +
-        "&query=" + keyword + "&location=" + location;
+    var type = req.query.type;
 
-    nodegrass.get(url, function (data, status, headers) {
-        console.log(">>>>>>>>>>>>>");
-        console.log("Service query: " + status);
-        console.log(url);
-        console.log("<<<<<<<<<<<<<");
-        if (status == 200) {
-            res.send(data);
-        }else{
-            res.send({});
-        }
-    }, null, 'utf8').on('error', function (e) {
-        console.log("Got error: " + e.message);
+    mapService.nearbySearch({
+        type: type,
+        location: location,
+        keyword: keyword,
+        radius: radius
+    }, function (data) {
+        /* 查询成功 */
+//        console.log(data);
+        res.send(data);
+        return;
+    }, function (e) {
+        /* 查询失败 */
+        console.log('error: ' + e.message);
+        res.send('error: ' + e.message);
     });
 
 });

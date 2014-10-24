@@ -1,5 +1,5 @@
 /**
- * Created by SAMSUNG on 2014/10/16.
+ * Created by jianbingfang on 2014/10/16.
  */
 
 module.exports = function (grunt) {
