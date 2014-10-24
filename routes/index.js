@@ -13,7 +13,7 @@ router.get('/', function (req, res) {
  */
 router.get('/nearby/query', function (req, res) {
 
-    var radius = req.query.radius | 1000;
+    var radius = req.query.radius || 1000;  // default: 1km
     var keyword = req.query.query;
     var location = req.query.location;
 
