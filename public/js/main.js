@@ -13,7 +13,7 @@ var map = new BMap.Map("map");                              // 创建Map实例
 
 /**
  * 一次查询需要用户提供的信息
- * @type {{location: {lng: number, lat: number}[], mode: string, cater: Array, entertainment: Array, sport: Array}}
+ * @type {{location: {lng: number, lat: number}[], mode: string, prefer: {cater: Array, entertainment: Array, sport: Array}}}
  */
 var queryInfo = {
     location: [
@@ -84,24 +84,35 @@ var Util = {
                     keyword += '$' + mQueryInfo.prefer[key][i];
                 }
 
-                $.getJSON('/nearby/query', {
+                /*$.getJSON('/search/nearby', {
                     type: key,
-                    query: encodeURIComponent(keyword),
+                    keyword: encodeURIComponent(keyword),
                     location: '40.004179,116.351633',
                     radius: 1000
                 }, function (data) {
-                    if (data.status == BMAP_STATUS_SUCCESS) {
+                    if (data.status === BMAP_STATUS_SUCCESS) {
                         console.log(data);
-                        alert(data.type + " - 总数目:" + data.total);
+                        alert("分数:" + data.score);
                     } else {
                         alert("ERROR: " + data.message);
                     }
                 }).fail(function () {
                     alert("nearby search service error!");
-                });
+                });*/
 
             }
         }
+
+        $.getJSON('/evaluate', mQueryInfo, function (data) {
+            if (data.status === 0) {
+                console.log(data);
+                alert("分数:" + data.score);
+            } else {
+                alert("ERROR: " + data.message);
+            }
+        }).fail(function () {
+            alert("nearby search service error!");
+        });
     }
 }
 

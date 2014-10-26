@@ -4,18 +4,20 @@
  */
 
 var nodegrass = require('nodegrass');
+var querystring = require('querystring')
+var http = require('http');
 
 var bmapHost = "http://api.map.baidu.com/place/v2/search";
 var ak = 'Wu85qkU4ZK6bH3fcNhp453dL';
 
-module.exports.nearbySearch = function (params, succCallBack, failCallback) {
+var nearbySearch = function (params, succCallBack, failCallback) {
 
     var type = params.type;
 
     var mLocation = params.location;
-    var mKeyword = params.keyword;
-    var mRadius = params.radius || 1000;  // default: 1km
-    var mScope = params.scope || 1;    // default: 1
+    var mKeyword = params.keyword;          // max num: 10
+    var mRadius = params.radius || 1000;    // default: 1km
+    var mScope = params.scope || 1;         // default: 1
 
     var url = bmapHost + "?ak=" + ak + "&output=json" +
         "&page_size=1&page_num=0&scope=" + mScope + "&radius=" + mRadius +
@@ -32,11 +34,12 @@ module.exports.nearbySearch = function (params, succCallBack, failCallback) {
             succCallBack(mData);
         } else {
             console.log('query: null...');
-            failCallback(mData);
+            failCallback(mData.message);
         }
     }, null, 'utf8').on('error', function (e) {
-        console.log("nearbySearch error: " + e.message);
-        failCallback(e);
+        failCallback(e.message);
     });
 
 }
+
+module.exports.nearbySearch = nearbySearch;
