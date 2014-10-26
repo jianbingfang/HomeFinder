@@ -43,6 +43,24 @@ router.get('/search/nearby', function (req, res) {
         res.send('error: ' + message);
     });
 
+});         
+router.get('/distance/query',function (req,res) {
+    console.log("2");
+    var origin = req.query.origin;
+    var destination = req.query.destination;
+    var type = req.query.type;
+    mapService.getDistance({
+        type: type,
+        origin: origin,
+        destination: destination
+    },function (data){
+        res.send(data);
+        return;
+    },function (e){
+        console.log('error: '+ e.message);
+        res.send('error:'+ e.message);
+    });
+
 });
 
 var getPreferInfo = function (queryInfo, callback) {

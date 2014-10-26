@@ -4,10 +4,9 @@
  */
 
 var nodegrass = require('nodegrass');
-var querystring = require('querystring')
-var http = require('http');
 
-var bmapHost = "http://api.map.baidu.com/place/v2/search";
+var bmapPlaceHost = "http://api.map.baidu.com/place/v2/search";
+var bmapDirectionHost="http://api.map.baidu.com/direction/v1/routematrix";
 var ak = 'Wu85qkU4ZK6bH3fcNhp453dL';
 
 var nearbySearch = function (params, succCallBack, failCallback) {
@@ -39,7 +38,36 @@ var nearbySearch = function (params, succCallBack, failCallback) {
     }, null, 'utf8').on('error', function (e) {
         failCallback(e.message);
     });
+}
 
+module.exports.getDistance = function (params, succCallBack, failCallback){
+    //params=['oringin':[[lat11,lng11],[lat12,lng12],....],'destination':[[lat21,lng21],[lat22,lng22],...]]
+    var type = params.type;
+
+    var originString="origins=";
+    var destinationString = "destinations=";
+    var s1 = params.origin;
+    var s2 = params.destination;
+    originString=originString+s1[1]+","+s1[0];
+    destinationString= destinationString+s2[1]+","+s2[0];
+    var url = bmapDirectionHost+"?ak="+ak+"&output=json"+"&"+originString+"&"+destinationString;
+    console.log("url:"+url);
+    nodegrass.get(url, function(data,status,headers){
+        var mData=JSON.parse(data);
+        console.log("Service query ["+ type +"]:"+status);
+        console.log(url);
+        if (status == 200){
+            mData.type = type;
+            console.log(mData.result.elements[0].duration.text);
+            succCallBack(mData);
+        }else{
+            console.log("query: null...");
+            failCallback(mData);
+        }
+    },null,'utf8').on('error',function(e){
+        console.log("getDistance error: "+ e.message);
+        failCallback(e);
+    });
 }
 
 module.exports.nearbySearch = nearbySearch;

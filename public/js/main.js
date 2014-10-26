@@ -61,6 +61,18 @@ var Util = {
         var mapBoxHeight = $(window).height() - $('#pageHeader').height() - $('#pageMiddle').height() - 38;
         $('#mapBox').css({height: mapBoxHeight + 'px'});
     },
+
+    getDistance: function(origin, destination){
+        $.getJSON('/distance/query',{
+            type: 'getDistance',
+            origin: origin,
+            destination: destination
+        }, function(data){
+            alert(data.result.elements[0].duration.text);
+        }).fail(function () {
+            alert("get distance service error!");
+        });
+    },
     /**
      * 获取坐标点point对于查询条件的相关评估数据
      * @param point 待评分点坐标，例如{'lng': 116.351633, 'lat': 40.004179}
@@ -210,6 +222,30 @@ var hotSpots = [
     {"lng": 116.425867, "lat": 39.918989, "count": 8}
 ];
 
+//landmark相关
+
+var icon = new BMap.Icon('../img/anchor.png', new BMap.Size(20, 32), {
+    anchor: new BMap.Size(10, 30)
+});
+
+var landmarks = new Array();
+
+function addLandMark(e){
+    var mkr = new BMap.Marker(e.point,{icon:icon});
+    map.addOverlay(mkr);
+    var a = new Array();
+    a.lng=e.point.lng;
+    a.lat=e.point.lat;
+
+    //landmark.push(e.point.lng);
+    landmarks.push(a);
+    alert(landmarks.length);
+    //alert(e.point.lng+","+e.point.lat);
+
+}
+map.addEventListener("click", addLandMark);
+
+
 if (!isSupportCanvas()) {
     alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~')
 }
@@ -227,6 +263,8 @@ if (!isSupportCanvas()) {
  其中 key 表示插值的位置, 0~1.
  value 为颜色值.
  */
+
+
 var heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 15});
 
 //渲染热力图
@@ -447,6 +485,11 @@ function isSupportCanvas() {
         }
 
         Util.collectInfoOfPoint({lng: 116.323026, lat: 39.990074}, queryInfo);
+
+        Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
+       
+ 
+
 
 //        searchAction(keyword);
     });
