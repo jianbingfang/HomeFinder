@@ -137,4 +137,27 @@ router.get('/evaluate', function (req, res) {
     res.send(result);
 });
 
+router.get('/duration/evaluate',function (req,res){
+    console.log("/duration/evaluate");
+    var type = req.query.type;
+    var mapInfo = req.query.mapInfo;
+    var mQueryInfo = req.query.mQueryInfo;
+    console.log(mQueryInfo);
+    mapService.evaluateDuration({
+        type: type,
+        location: mapInfo.UpperleftLocation,
+        mQueryInfo: mQueryInfo
+    },function (data){
+        res.send(data);
+        return;
+    },function (e){
+        consold.log('error: '+ e.message);
+        res.send('error: ' + e.message);
+    });
+
+});
+
+
+
+
 module.exports = router;

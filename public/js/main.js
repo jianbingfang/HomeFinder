@@ -17,7 +17,7 @@ var map = new BMap.Map("map");                              // 创建Map实例
  */
 var queryInfo = {
     location: [
-        {lng: 116.351633, lat: 40.004179}
+       // {lng: 116.351633, lat: 40.004179},{lng: 116.351633, lat: 40.004179}
     ], // 可包含多个，格式为：{"lng" : 116, "lat" : 40}
     mode: "transit",   // 驾车为"driving"，公交为"transit"，默认值："transit"
     prefer: {
@@ -26,6 +26,14 @@ var queryInfo = {
         sport: []
     }
 };
+
+var mapInfo ={
+    UpperleftLocation:{lng:-1, lat:-1},//左上角的经纬度至
+    lngRange:-1,//地图经度跨度
+    latRange:-1,//地图纬度跨度
+    resolution: -1,//分辨率
+};
+
 
 var queryResult = {
     duration: [],
@@ -73,6 +81,19 @@ var Util = {
             alert("get distance service error!");
         });
     },
+   evaluateDuration: function(mapInfo, mQueryInfo){
+        $.get('/duration/evaluate',{
+            type: 'evaluateDuration',
+            mapInfo: mapInfo,
+            mQueryInfo: mQueryInfo
+        }, function(data){
+            alert(data);
+        }).fail(function(){
+            alert("evaluate duration service error!");
+        });
+    },
+
+
     /**
      * 获取坐标点point对于查询条件的相关评估数据
      * @param point 待评分点坐标，例如{'lng': 116.351633, 'lat': 40.004179}
@@ -233,13 +254,14 @@ var landmarks = new Array();
 function addLandMark(e){
     var mkr = new BMap.Marker(e.point,{icon:icon});
     map.addOverlay(mkr);
-    var a = new Array();
+    var a={};
     a.lng=e.point.lng;
     a.lat=e.point.lat;
 
     //landmark.push(e.point.lng);
-    landmarks.push(a);
-    alert(landmarks.length);
+    queryInfo.location.push(a);
+
+    alert(queryInfo.location.length);
     //alert(e.point.lng+","+e.point.lat);
 
 }
@@ -484,10 +506,17 @@ function isSupportCanvas() {
             });
         }
 
-        Util.collectInfoOfPoint({lng: 116.323026, lat: 39.990074}, queryInfo);
+        //Util.collectInfoOfPoint({lng: 116.323026, lat: 39.990074}, queryInfo);
 
-        Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
-       
+       // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
+
+        mapInfo.UpperleftLocation.lng=116.323026;
+        mapInfo.UpperleftLocation.lat=39.990074;
+        mapInfo.lngRange=10;
+        mapInfo.latRange=10;
+        mapInfo.resolution=10;
+        Util.evaluateDuration(mapInfo, queryInfo);
+
  
 
 

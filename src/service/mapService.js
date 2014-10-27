@@ -40,6 +40,47 @@ var nearbySearch = function (params, succCallBack, failCallback) {
     });
 }
 
+var getDistanceRow=function (location, landmarks, column , result, succCallBack, failCallback){
+
+        var originString="origins="+location.lat+","+location.lng;
+        var destinationString="destinations="+landmarks[column].lat+","+landmarks[column].lng;
+        var url = bmapDirectionHost+"?ak="+ak+"&output=json"+"&"+originString+"&"+destinationString;
+        console.log("column="+column+";url="+url);
+        nodegrass.get(url,function(data,status,headers){
+            var mData= JSON.parse(data);
+            console.log("getDistanceRow:"+ status);
+            if (status == 200){
+                if (column +1 <landmarks.length){
+                console.log(mData.result.elements[0].duration.text);
+                result+=mData.result.elements[0].duration.text+',';
+                getDistanceRow(location, landmarks, column+1, result, succCallBack, failCallback);
+            }
+            else if(column+1 == landmarks.length){
+                result+=mData.result.elements[0].duration.text+',';
+                console.log(result);
+                succCallBack(result);
+            }
+            }else{
+                console.log("getDistanceRow error at column:"+ column);
+                failCallback(result);
+            }
+        },null,'utf8').on('error',function(e){
+            console.log("getDistanceRow error:"+ e.message);
+        });
+
+}
+
+var evaluateDuration = function (params, succCallBack, failCallback){
+    var type = params.type;
+    var location = params.location;
+    var landmarks = params.mQueryInfo.location;
+    var result =[];
+    console.log("length:"+landmarks.length);
+
+    getDistanceRow(location, landmarks, 0, result, succCallBack, failCallback);
+}
+
+
 var getDistance = function (params, succCallBack, failCallback) {
     //params=['oringin':[[lat11,lng11],[lat12,lng12],....],'destination':[[lat21,lng21],[lat22,lng22],...]]
     var type = params.type;
@@ -70,5 +111,6 @@ var getDistance = function (params, succCallBack, failCallback) {
     });
 }
 
+module.exports.evaluateDuration= evaluateDuration;
 module.exports.nearbySearch = nearbySearch;
 module.exports.getDistance = getDistance;
