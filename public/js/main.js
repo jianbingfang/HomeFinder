@@ -17,7 +17,7 @@ var map = new BMap.Map("map");                              // 创建Map实例
  */
 var queryInfo = {
     location: [
-       // {lng: 116.351633, lat: 40.004179},{lng: 116.351633, lat: 40.004179}
+        // {lng: 116.351633, lat: 40.004179},{lng: 116.351633, lat: 40.004179}
     ], // 可包含多个，格式为：{"lng" : 116, "lat" : 40}
     mode: "transit",   // 驾车为"driving"，公交为"transit"，默认值："transit"
     prefer: {
@@ -27,10 +27,10 @@ var queryInfo = {
     }
 };
 
-var mapInfo ={
-    UpperleftLocation:{lng:-1, lat:-1},//左上角的经纬度至
-    lngRange:-1,//地图经度跨度
-    latRange:-1,//地图纬度跨度
+var mapInfo = {
+    UpperleftLocation: {lng: -1, lat: -1},//左上角的经纬度至
+    lngRange: -1,//地图经度跨度
+    latRange: -1,//地图纬度跨度
     resolution: -1,//分辨率
 };
 
@@ -70,25 +70,26 @@ var Util = {
         $('#mapBox').css({height: mapBoxHeight + 'px'});
     },
 
-    getDistance: function(origin, destination){
-        $.getJSON('/distance/query',{
+    getDistance: function (origin, destination) {
+        $.getJSON('/distance/query', {
             type: 'getDistance',
             origin: origin,
             destination: destination
-        }, function(data){
+        }, function (data) {
             alert(data.result.elements[0].duration.text);
         }).fail(function () {
             alert("get distance service error!");
         });
     },
-   evaluateDuration: function(mapInfo, mQueryInfo){
-        $.get('/duration/evaluate',{
+
+    evaluateDuration: function (mapInfo, mQueryInfo) {
+        $.get('/duration/evaluate', {
             type: 'evaluateDuration',
             mapInfo: mapInfo,
             mQueryInfo: mQueryInfo
-        }, function(data){
+        }, function (data) {
             alert(data);
-        }).fail(function(){
+        }).fail(function () {
             alert("evaluate duration service error!");
         });
     },
@@ -96,13 +97,12 @@ var Util = {
 
     /**
      * 获取坐标点point对于查询条件的相关评估数据
-     * @param point 待评分点坐标，例如{'lng': 116.351633, 'lat': 40.004179}
+     * @param position 待评分点坐标，例如{'lng': 116.351633, 'lat': 40.004179}
      * @param mQueryInfo 一个queryInfo对象
      */
-    collectInfoOfPoint: function (point, mQueryInfo) {
+    collectInfoOfPosition: function (position, mQueryInfo) {
 
         for (var key in mQueryInfo.prefer) {
-
             mQueryInfo.prefer[key] = [];
             $('#' + key + ' li input').each(function () {
                 if ($(this).is(':checked')) {
@@ -111,28 +111,10 @@ var Util = {
             });
 
             if (mQueryInfo.prefer[key].length > 0) {
-
                 var keyword = mQueryInfo.prefer[key][0];
                 for (var i = 1; i < mQueryInfo.prefer[key].length; i++) {
                     keyword += '$' + mQueryInfo.prefer[key][i];
                 }
-
-                /*$.getJSON('/search/nearby', {
-                    type: key,
-                    keyword: encodeURIComponent(keyword),
-                    location: '40.004179,116.351633',
-                    radius: 1000
-                }, function (data) {
-                    if (data.status === BMAP_STATUS_SUCCESS) {
-                        console.log(data);
-                        alert("分数:" + data.score);
-                    } else {
-                        alert("ERROR: " + data.message);
-                    }
-                }).fail(function () {
-                    alert("nearby search service error!");
-                });*/
-
             }
         }
 
@@ -249,14 +231,12 @@ var icon = new BMap.Icon('../img/anchor.png', new BMap.Size(20, 32), {
     anchor: new BMap.Size(10, 30)
 });
 
-var landmarks = new Array();
-
-function addLandMark(e){
-    var mkr = new BMap.Marker(e.point,{icon:icon});
+function addLandMark(e) {
+    var mkr = new BMap.Marker(e.point, {icon: icon});
     map.addOverlay(mkr);
-    var a={};
-    a.lng=e.point.lng;
-    a.lat=e.point.lat;
+    var a = {};
+    a.lng = e.point.lng;
+    a.lat = e.point.lat;
 
     //landmark.push(e.point.lng);
     queryInfo.location.push(a);
@@ -506,21 +486,16 @@ function isSupportCanvas() {
             });
         }
 
-        //Util.collectInfoOfPoint({lng: 116.323026, lat: 39.990074}, queryInfo);
+        Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
 
-       // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
+        // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
 
-        mapInfo.UpperleftLocation.lng=116.323026;
-        mapInfo.UpperleftLocation.lat=39.990074;
-        mapInfo.lngRange=10;
-        mapInfo.latRange=10;
-        mapInfo.resolution=10;
-        Util.evaluateDuration(mapInfo, queryInfo);
-
- 
-
-
-//        searchAction(keyword);
+//        mapInfo.UpperleftLocation.lng = 116.323026;
+//        mapInfo.UpperleftLocation.lat = 39.990074;
+//        mapInfo.lngRange = 10;
+//        mapInfo.latRange = 10;
+//        mapInfo.resolution = 10;
+//        Util.evaluateDuration(mapInfo, queryInfo);
     });
 
     /**

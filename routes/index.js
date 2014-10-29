@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var core = require('../src/service/core');
 var mapService = require('../src/service/mapService');
@@ -15,7 +17,8 @@ router.get('/', function (req, res) {
 router.get('/search/nearby', function (req, res) {
 
     var radius = req.query.radius || 1000;  // default: 1km
-    var keyword = req.query.keyword;
+    //var keyword = req.query.keyword;
+    var keyword = '中学';
     var location = req.query.location;
 
     var type = req.query.type;
@@ -43,8 +46,10 @@ router.get('/search/nearby', function (req, res) {
         res.send('error: ' + message);
     });
 
-});         
-router.get('/distance/query',function (req,res) {
+});
+
+
+router.get('/distance/query', function (req, res) {
     console.log("2");
     var origin = req.query.origin;
     var destination = req.query.destination;
@@ -53,71 +58,15 @@ router.get('/distance/query',function (req,res) {
         type: type,
         origin: origin,
         destination: destination
-    },function (data){
+    }, function (data) {
         res.send(data);
         return;
-    },function (e){
-        console.log('error: '+ e.message);
-        res.send('error:'+ e.message);
+    }, function (e) {
+        console.log('error: ' + e.message);
+        res.send('error:' + e.message);
     });
 
 });
-
-var getPreferInfo = function (queryInfo, callback) {
-
-    callback = callback || function () {
-    };
-
-    var results = [];
-    var getPreferInfoHelper = function (mQueryInfo, index, mCallback) {
-
-        index = index || 0;
-        if (index >= Object.keys(mQueryInfo.prefer).length) {
-            return mCallback(results);
-        }
-
-        var radius = mQueryInfo.radius || 1000;  // default: 1km
-        var location = mQueryInfo.location[0].lat + ',' + mQueryInfo.location[0].lng;
-        var key = Object.keys(mQueryInfo.prefer)[index];
-
-        var keyword = '';
-        for (var i = 0; i < mQueryInfo.prefer[key].length; i++) {
-            keyword += mQueryInfo.prefer[key][i] + '$';
-        }
-
-        mapService.nearbySearch({
-            type: key,
-            location: location,
-            keyword: keyword,
-            radius: radius
-        }, function (data) {
-            /* 查询成功 */
-//        console.log(data);
-            var result = {
-                status: data.status,
-                message: data.message,
-                count: data.total
-            };
-            if (result.status === 0) {
-                /* 若nearby数据获取成功 */
-                result.score = core.evaluate();
-            }
-            results.push(result);
-            getPreferInfoHelper(mQueryInfo, index + 1, mCallback);
-        }, function (message) {
-            /* 查询失败 */
-            console.log('nearbySearch error: ' + message);
-            var result = {
-                status: -1,
-                message: message
-            };
-            results.push(result);
-            getPreferInfoHelper(mQueryInfo, index + 1, mCallback);
-        });
-    }
-
-    getPreferInfoHelper(queryInfo, 0, callback);
-}
 
 router.get('/evaluate', function (req, res) {
 
@@ -125,8 +74,19 @@ router.get('/evaluate', function (req, res) {
 
     console.log(mQueryInfo);
 
-    getPreferInfo(mQueryInfo, function (data) {
-        console.log(data);
+//    mapService.getPreferInfo(mQueryInfo, function (data) {
+//        console.log(data);
+//    });
+
+    mapService.hasKeySchool({
+        location: '39.915,116.404'
+    }, function (result) {
+        /* 查询成功 */
+        console.log('hasKeySchool query result: ' + result);
+
+    }, function (message) {
+        /* 查询失败 */
+        console.log(message);
     });
 
     var result = {
@@ -137,7 +97,7 @@ router.get('/evaluate', function (req, res) {
     res.send(result);
 });
 
-router.get('/duration/evaluate',function (req,res){
+router.get('/duration/evaluate', function (req, res) {
     console.log("/duration/evaluate");
     var type = req.query.type;
     var mapInfo = req.query.mapInfo;
@@ -147,17 +107,14 @@ router.get('/duration/evaluate',function (req,res){
         type: type,
         location: mapInfo.UpperleftLocation,
         mQueryInfo: mQueryInfo
-    },function (data){
+    }, function (data) {
         res.send(data);
         return;
-    },function (e){
-        consold.log('error: '+ e.message);
+    }, function (e) {
+        consold.log('error: ' + e.message);
         res.send('error: ' + e.message);
     });
 
 });
-
-
-
 
 module.exports = router;

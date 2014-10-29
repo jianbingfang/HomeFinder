@@ -15,34 +15,34 @@ var keyJuniorSchool = [
     '北京四中',
     '北京八中',
     '北京十三中',
-    '一六一中学',
+    '一六一中',
     '三帆中学',
     '北京铁二中',
-    '第二十五中学',
+    '第二十五中',
     '第三中学',
     '第五中学',
-    '五十五中学',
-    '一六六中学',
-    '一七一中学',
+    '五十五中',
+    '一六六中',
+    '一七一中',
     '东直门中学',
     '景山学校',
     '北京二中',
     '汇文中学',
     '五十中学',
-    '一零九中学',
+    '一零九中',
     '计划统计学校',
     '广渠门中学',
     '十一中学',
     '北师大附中',
     '十四中学',
     '十五中学',
-    '六十六中学',
+    '六十六中',
     '回民学校',
     '育才学校',
     '八十中学',
     '日坛中学',
     '和平街第一中学',
-    '九十四中学',
+    '九十四中',
     '十七中学',
     '陈经纶中学',
     '第十中学',
@@ -108,10 +108,10 @@ var keySeniorSchool = [
     '门头沟大峪中学'
 ];
 
-module.exports.getKeyJuniorSchool = function (argument) {
+module.exports.getKeyJuniorSchool = function () {
     return keyJuniorSchool;
 };
 
-module.exports.getKeyJuniorSchool = function (argument) {
+module.exports.getKeySeniorSchool = function () {
     return keySeniorSchool;
 };

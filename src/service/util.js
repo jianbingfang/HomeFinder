@@ -1,4 +1,8 @@
 'use strict';
+/**
+ * 常用方法
+ * Created by jianbingfang on 2014/10/29.
+ */
 
 var school = require('../model/keySchool');
 
@@ -8,7 +12,7 @@ var isInSchoolList = function (list, name) {
         var tag = true;
         var lastPos = -1;
         for (var i = 0; i < school.length; i++) {
-            lastPos = name.substring(lastPos+1).indexOf(school.charAt(i));
+            lastPos = name.substring(lastPos + 1).indexOf(school.charAt(i));
             if (lastPos === -1) {
                 tag = false;
                 break;
