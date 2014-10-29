@@ -6,8 +6,10 @@ var isInSchoolList = function (list, name) {
 
     for (var school in list) {
         var tag = true;
+        var lastPos = -1;
         for (var i = 0; i < school.length; i++) {
-            if (name.indexOf(school.charAt(i)) === -1) {
+            lastPos = name.substring(lastPos+1).indexOf(school.charAt(i));
+            if (lastPos === -1) {
                 tag = false;
                 break;
             }
