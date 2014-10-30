@@ -11,14 +11,15 @@ var isInSchoolList = function (list, name) {
     for (var school in list) {
         var tag = true;
         var lastPos = -1;
-        for (var i = 0; i < school.length; i++) {
-            lastPos = name.substring(lastPos + 1).indexOf(school.charAt(i));
+        for (var i = 0; i < list[school].length; i++) {
+            lastPos = name.substring(lastPos + 1).indexOf(list[school][i]);
             if (lastPos === -1) {
                 tag = false;
                 break;
             }
         }
         if (tag === true) {
+            console.log('key school matched: ' + list[school]);
             return true;
         }
     }

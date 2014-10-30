@@ -72,7 +72,8 @@ router.get('/evaluate', function (req, res) {
 
     var mQueryInfo = req.query;
 
-    console.log(mQueryInfo);
+//    console.log('mQueryInfo:');
+//    console.log(mQueryInfo);
 
 //    mapService.getPreferInfo(mQueryInfo, function (data) {
 //        console.log(data);
@@ -80,21 +81,21 @@ router.get('/evaluate', function (req, res) {
 
     mapService.hasKeySchool({
         location: '39.915,116.404'
-    }, function (result) {
+    }, function (data) {
         /* 查询成功 */
-        console.log('hasKeySchool query result: ' + result);
+        console.log('hasKeySchool query result: ' + data);
+        var result = {
+            status: 0,
+            message: 'msg',
+            score: data
+        }
+        res.send(result);
 
     }, function (message) {
         /* 查询失败 */
         console.log(message);
     });
 
-    var result = {
-        status: 0,
-        message: 'msg',
-        score: 60
-    }
-    res.send(result);
 });
 
 router.get('/duration/evaluate', function (req, res) {

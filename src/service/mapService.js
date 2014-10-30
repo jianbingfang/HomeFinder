@@ -14,8 +14,6 @@ var ak = 'Wu85qkU4ZK6bH3fcNhp453dL';
 
 var nearbySearch = function (params, succCallBack, failCallback) {
 
-    var type = params.type;
-
     var mLocation = params.location;
     var mKeyword = params.keyword;          // max num: 10
     var mRadius = params.radius || 1000;    // default: 1km
@@ -29,18 +27,18 @@ var nearbySearch = function (params, succCallBack, failCallback) {
 
     nodegrass.get(url, function (data, status) {
         var mData = JSON.parse(data);
-        console.log("Service query [" + type + "]: " + status);
-        console.log(url);
+//        console.log(mData);
+        console.log("Service query: " + status);
         if (status === 200) {
-            mData.type = type;
-//            console.log('type: ' + mData.type);
-//            console.log('-------------------------------');
+//            mData.type = type;
+            console.log('-------------------------------');
             succCallBack(mData);
         } else {
             console.log('query: null...');
             failCallback(mData.message);
         }
     }, null, 'utf8').on('error', function (e) {
+        console.log('error in nearbySearch');
         failCallback(e.message);
     });
 };
@@ -178,7 +176,7 @@ var hasKeySchool = function (params, succCallBack, failCallback) {
 
         var mLocation = params.location;
         var mRadius = params.radius || 1500;    // default: 1.5km
-        var mScope = params.scope || 2;         // default: 2
+        var mScope = 2;         // default: 2
         var mKeyword = '中学';
         var mPageSize = 20;                     // max pageSize: 20
 
@@ -191,12 +189,13 @@ var hasKeySchool = function (params, succCallBack, failCallback) {
             pageNum: pageNum
         }, function (data) {
             /* 查询成功 */
-            // console.log(data);
+//            console.log(data);
             if (data.status === 0) {
                 /* 若数据获取成功 */
                 var hasKeySchool = false;
                 for (var school in data.results) {
-                    if (util.isKeyJuniorSchool(school.name) === true) {
+                    console.log('judging school: ' + data.results[school].name);
+                    if (util.isKeyJuniorSchool(data.results[school].name) === true) {
                         hasKeySchool = true;
                         break;
                     }
