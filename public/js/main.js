@@ -31,7 +31,7 @@ var mapInfo = {
     UpperleftLocation: {lng: -1, lat: -1},//左上角的经纬度至
     lngRange: -1,//地图经度跨度
     latRange: -1,//地图纬度跨度
-    resolution: -1,//分辨率
+    resolution: -1//分辨率
 };
 
 
@@ -121,7 +121,9 @@ var Util = {
         $.getJSON('/evaluate', mQueryInfo, function (data) {
             if (data.status === 0) {
                 console.log(data);
-                alert("分数:" + data.score);
+                alert("重点中学: " + data.results.hasKeySchool +
+                    ".\n距离: " + data.results.distance.toString() +
+                    ".\n评分: " + data.results.score);
             } else {
                 alert("ERROR: " + data.message);
             }
@@ -605,11 +607,16 @@ function isSupportCanvas() {
         }
         function PageClick(pageclickednumber) {
             pageclickednumber = parseInt(pageclickednumber);
-            $("#pager").pager({ pagenumber: pageclickednumber, pagecount: pagecount, showcount: 3, buttonClickCallback: PageClick });
+            $("#pager").pager({
+                pagenumber: pageclickednumber,
+                pagecount: pagecount,
+                showcount: 3,
+                buttonClickCallback: PageClick
+            });
             searchAction(keyword, pageclickednumber - 1);
         }
 
-        $("#mapPager").pager({ pagenumber: page, pagecount: pagecount, showcount: 3, buttonClickCallback: PageClick });
+        $("#mapPager").pager({pagenumber: page, pagecount: pagecount, showcount: 3, buttonClickCallback: PageClick});
 
         map.setViewport(points);
     };
@@ -642,11 +649,16 @@ function isSupportCanvas() {
         }
         function PageClick(pageclickednumber) {
             pageclickednumber = parseInt(pageclickednumber);
-            $("#pager").pager({ pagenumber: pageclickednumber, pagecount: pagecount, showcount: 9, buttonClickCallback: PageClick });
+            $("#pager").pager({
+                pagenumber: pageclickednumber,
+                pagecount: pagecount,
+                showcount: 9,
+                buttonClickCallback: PageClick
+            });
             searchAction(keyword, pageclickednumber - 1);
         }
 
-        $("#pager").pager({ pagenumber: page, pagecount: pagecount, showcount: 9, buttonClickCallback: PageClick });
+        $("#pager").pager({pagenumber: page, pagecount: pagecount, showcount: 9, buttonClickCallback: PageClick});
     }
 
     searchAction(keyword);

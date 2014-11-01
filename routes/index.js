@@ -8,7 +8,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function (req, res) {
-    res.render('index', { title: 'Express' });
+    res.render('index', {title: 'Express'});
 });
 
 /**
@@ -70,7 +70,7 @@ router.get('/distance/query', function (req, res) {
 
 router.get('/evaluate', function (req, res) {
 
-    var mQueryInfo = req.query;
+    //var mQueryInfo = req.query;
 
 //    console.log('mQueryInfo:');
 //    console.log(mQueryInfo);
@@ -79,21 +79,47 @@ router.get('/evaluate', function (req, res) {
 //        console.log(data);
 //    });
 
+    var testData = {
+        location: '39.999277,116.348646',
+        keywords: ['高中', '篮球场', '公园', '地铁']
+    };
+
+    var data = {
+        status: 0,
+        message: 'ok',
+        results: {}
+    };
+
     mapService.hasKeySchool({
-        location: '39.915,116.404'
-    }, function (data) {
+        location: testData.location
+    }, function (doesItHas) {
         /* 查询成功 */
-        console.log('hasKeySchool query result: ' + data);
-        var result = {
-            status: 0,
-            message: 'msg',
-            score: data
-        }
-        res.send(result);
+        console.log('hasKeySchool query result: ' + doesItHas);
+        data.results.hasKeySchool = doesItHas;
+
+        mapService.getDistanceOfNearest({
+            location: testData.location,
+            keywords: testData.keywords,
+            filter: 'life',
+            sort_name: 'distance',
+            sort_rule: 0
+        }, function (distance) {
+            /* 查询成功 */
+            console.log('distance query result: ' + distance.toString());
+            data.results.distance = distance;
+            var arg = [doesItHas, 0].concat(distance);
+            var score = core.evaluate(arg);
+            console.log('>> SCORE: ' + score);
+            data.results.score = score;
+            res.send(data);
+        });
 
     }, function (message) {
         /* 查询失败 */
-        console.log(message);
+        console.log('hasKeySchool: ' + message);
+        data.status = 1;
+        data.message = message;
+        res.send(data);
     });
 
 });
@@ -112,7 +138,7 @@ router.get('/duration/evaluate', function (req, res) {
         res.send(data);
         return;
     }, function (e) {
-        consold.log('error: ' + e.message);
+        console.log('error: ' + e.message);
         res.send('error: ' + e.message);
     });
 

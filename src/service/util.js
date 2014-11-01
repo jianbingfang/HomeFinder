@@ -23,7 +23,6 @@ var isInSchoolList = function (list, name) {
             return true;
         }
     }
-
     return false;
 };
 
