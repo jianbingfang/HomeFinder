@@ -34,5 +34,10 @@ var isKeySeniorSchool = function (name) {
     return isInSchoolList(school.getKeySeniorSchool(), name);
 };
 
+var lnglat2str = function (lnglat) {
+    return lnglat.lat + "," + lnglat.lng;
+};
+
 module.exports.isKeyJuniorSchool = isKeyJuniorSchool;
 module.exports.isKeySeniorSchool = isKeySeniorSchool;
+module.exports.lnglat2str = lnglat2str;

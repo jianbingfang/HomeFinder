@@ -122,8 +122,8 @@ var Util = {
             if (data.status === 0) {
                 console.log(data);
                 alert("重点中学: " + data.results.hasKeySchool +
-                    ".\n距离: " + data.results.distance.toString() +
-                    ".\n评分: " + data.results.score);
+                ".\n距离: " + data.results.distance.toString() +
+                ".\n评分: " + data.results.score);
             } else {
                 alert("ERROR: " + data.message);
             }
@@ -251,7 +251,7 @@ map.addEventListener("click", addLandMark);
 
 
 if (!isSupportCanvas()) {
-    alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~')
+    alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
 }
 //详细的参数,可以查看heatmap.js的文档 https://github.com/pa7/heatmap.js/blob/master/README.md
 //参数说明如下:
@@ -574,7 +574,6 @@ function isSupportCanvas() {
             points.push(point);
             var tr = $("<tr><td width='75%'><a href='###' target='_blank' onclick='Util.addLogCount()'>" + item.title + "<a/><br/>" + item.address + "</td><td width='25%'>" + item.dayprice + "<br/><span style='color:red;'>元/晚</span></td></tr>").click(showInfo);
             $('#mapList').append(tr);
-            ;
             marker.addEventListener('click', showInfo);
             function showInfo() {
                 var content = "<img src='" + item.mainimage + "' style='width:111px;height:83px;float:left;margin-right:5px;'/>" +
@@ -630,7 +629,7 @@ function isSupportCanvas() {
         var content = res.contents;
         $('#listBoby').html('');
 
-        if (content.length == 0) {
+        if (content.length === 0) {
             $('#listBoby').append($('<p style="border-top:1px solid #DDDDDD;padding-top:10px;text-align:center;text-align:center;font-size:18px;" class="text-warning">抱歉，没有找到您想要的短租信息，请重新查询</p>'));
             return;
         }

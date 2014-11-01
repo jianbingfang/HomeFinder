@@ -70,55 +70,14 @@ router.get('/distance/query', function (req, res) {
 
 router.get('/evaluate', function (req, res) {
 
-    //var mQueryInfo = req.query;
-
-//    console.log('mQueryInfo:');
-//    console.log(mQueryInfo);
-
-//    mapService.getPreferInfo(mQueryInfo, function (data) {
-//        console.log(data);
-//    });
+    var mQueryInfo = req.query;
 
     var testData = {
-        location: '39.999277,116.348646',
-        keywords: ['高中', '篮球场', '公园', '地铁']
+        origination: {lat: 39.999277, lng: 116.348646},
+        destination: {lat: 39.999277, lng: 116.348646}
     };
 
-    var data = {
-        status: 0,
-        message: 'ok',
-        results: {}
-    };
-
-    mapService.hasKeySchool({
-        location: testData.location
-    }, function (doesItHas) {
-        /* 查询成功 */
-        console.log('hasKeySchool query result: ' + doesItHas);
-        data.results.hasKeySchool = doesItHas;
-
-        mapService.getDistanceOfNearest({
-            location: testData.location,
-            keywords: testData.keywords,
-            filter: 'life',
-            sort_name: 'distance',
-            sort_rule: 0
-        }, function (distance) {
-            /* 查询成功 */
-            console.log('distance query result: ' + distance.toString());
-            data.results.distance = distance;
-            var arg = [doesItHas, 0].concat(distance);
-            var score = core.evaluate(arg);
-            console.log('>> SCORE: ' + score);
-            data.results.score = score;
-            res.send(data);
-        });
-
-    }, function (message) {
-        /* 查询失败 */
-        console.log('hasKeySchool: ' + message);
-        data.status = 1;
-        data.message = message;
+    core.getScore(testData.origination, testData.destination, function (data) {
         res.send(data);
     });
 
