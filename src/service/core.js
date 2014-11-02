@@ -20,7 +20,7 @@ var evaluate = function (data) {
     return score;
 };
 
-var getScore = function (origination, destination, callback) {
+var getScore = function (origin, destination, callback) {
 
     var data = {
         status: 0,
@@ -28,7 +28,7 @@ var getScore = function (origination, destination, callback) {
         results: {}
     };
 
-    var mLocation = util.lnglat2str(origination);
+    var mLocation = util.lnglat2str(origin);
 
     mapService.hasKeySchool({
         location: mLocation
@@ -66,5 +66,36 @@ var getScore = function (origination, destination, callback) {
     });
 };
 
+var getScoreOfPoints = function (originArray, destination, callback) {
+
+    var data = {
+        status: 0,
+        message: 'ok',
+        results: []
+    };
+
+    console.log(originArray);
+
+    var getScoreOfPointsHelper = function (index, destination, callback) {
+
+        if (index >= originArray.length) {
+            return callback(data);
+        }
+
+        getScore(originArray[index], destination, function (dt) {
+            data.results.push({
+                lng: originArray[index].lng,
+                lat: originArray[index].lat,
+                count: dt.results.score || null
+            });
+            getScoreOfPointsHelper(index + 1, destination, callback);
+        });
+    };
+
+
+    getScoreOfPointsHelper(0, destination, callback);
+};
+
 //module.exports.evaluate = evaluate;
 module.exports.getScore = getScore;
+module.exports.getScoreOfPoints = getScoreOfPoints;

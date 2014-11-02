@@ -70,14 +70,30 @@ router.get('/distance/query', function (req, res) {
 
 router.get('/evaluate', function (req, res) {
 
-    var mQueryInfo = req.query;
+    //var queryInfo = req.query.queryInfo;
+
+    var mapInfo = req.query.mapInfo;
+
+    mapInfo.southWest.lat = parseFloat(mapInfo.southWest.lat);
+    mapInfo.southWest.lng = parseFloat(mapInfo.southWest.lng);
+    mapInfo.range.lat = parseFloat(mapInfo.range.lat);
+    mapInfo.range.lng = parseFloat(mapInfo.range.lng);
+
+    var hotSpots = mapService.getGridPoints(mapInfo.southWest, mapInfo.range, {lng: 4, lat: 3});
+
+    console.log(mapInfo);
+    //console.log(hotSpots);
 
     var testData = {
         origination: {lat: 39.999277, lng: 116.348646},
         destination: {lat: 39.999277, lng: 116.348646}
     };
 
-    core.getScore(testData.origination, testData.destination, function (data) {
+    //core.getScore(testData.origination, testData.destination, function (data) {
+    //    res.send(data);
+    //});
+
+    core.getScoreOfPoints(hotSpots, testData.destination, function (data) {
         res.send(data);
     });
 

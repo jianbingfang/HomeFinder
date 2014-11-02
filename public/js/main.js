@@ -118,12 +118,26 @@ var Util = {
             }
         }
 
-        $.getJSON('/evaluate', mQueryInfo, function (data) {
+        var bounds = map.getBounds();
+        map.addOverlay(new BMap.Marker(bounds.getSouthWest(), {icon: icon}));
+        map.addOverlay(new BMap.Marker(bounds.getNorthEast(), {icon: icon}));
+        map.addOverlay(new BMap.Marker(bounds.getCenter(), {icon: icon}));
+
+        console.log(bounds.getSouthWest());
+
+        $.getJSON('/evaluate', {
+            queryInfo: mQueryInfo,
+            mapInfo: {
+                southWest: {lng: bounds.getSouthWest().lng, lat: bounds.getSouthWest().lat},
+                range: {lng: bounds.toSpan().lng, lat: bounds.toSpan().lat}
+            }
+        }, function (data) {
             if (data.status === 0) {
                 console.log(data);
-                alert("重点中学: " + data.results.hasKeySchool +
-                ".\n距离: " + data.results.distance.toString() +
-                ".\n评分: " + data.results.score);
+                //alert("重点中学: " + data.results.hasKeySchool +
+                //".\n距离: " + data.results.distance.toString() +
+                //".\n评分: " + data.results.score);
+                alert('第一点分数: ' + data.results[0].count);
             } else {
                 alert("ERROR: " + data.message);
             }
@@ -479,14 +493,6 @@ function isSupportCanvas() {
 
     //绑定检索按钮事件
     $('#searchBtn').bind('click', function () {
-        for (var key in queryInfo.prefer) {
-            queryInfo.prefer[key] = [];
-            $('#' + key + ' li input').each(function () {
-                if ($(this).is(':checked')) {
-                    queryInfo.prefer[key].push($(this).val());
-                }
-            });
-        }
 
         Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
 
@@ -665,4 +671,36 @@ function isSupportCanvas() {
 
 $(document).ready(function () {
     // Util.setMapHeight();
+    var bounds = map.getBounds();
+    //alert(bounds.toSpan().lat + '==' + (bounds.getNorthEast().lat - bounds.getSouthWest().lat));
+    //map.addOverlay(new BMap.Marker(bounds.getSouthWest(), {icon: icon}));
+    //map.addOverlay(new BMap.Marker(bounds.getNorthEast(), {icon: icon}));
+    //map.addOverlay(new BMap.Marker(bounds.getCenter(), {icon: icon}));
+
+    var mi = {
+        southWest: bounds.getSouthWest(),
+        range: bounds.toSpan()
+    };
+    map.addOverlay(new BMap.Marker(mi.southWest, {icon: icon}));
+
+    var grid = {
+        lngRange: mi.range.lng / 20,
+        latRange: mi.range.lat / 15
+    };
+
+    var spots = [];
+
+    for (var i = 0; i < 15; i++) {
+        for (var j = 0; j < 20; j++) {
+            spots.push({
+                lng: mi.southWest.lng + grid.lngRange * j,
+                lat: mi.southWest.lat + grid.latRange * i
+            });
+        }
+    }
+
+    for (i = 0; i < spots.length; i++) {
+        map.addOverlay(new BMap.Marker(spots[i], {icon: icon}));
+    }
 });
+

@@ -303,9 +303,31 @@ var getDistanceOfNearest = function (params, callback) {
     getDistanceOfNearestHelper(params, 0, callback);
 };
 
+var getGridPoints = function (southWest, range, size) {
+
+    var grid = {
+        lngRange: range.lng / (size.lng - 1),
+        latRange: range.lat / (size.lat - 1)
+    };
+
+    var spots = [];
+
+    for (var i = 0; i < size.lat; i++) {
+        for (var j = 0; j < size.lng; j++) {
+            spots.push({
+                lng: southWest.lng + grid.lngRange * j,
+                lat: southWest.lat + grid.latRange * i
+            });
+        }
+    }
+
+    return spots;
+};
+
 module.exports.evaluateDuration = evaluateDuration;
 module.exports.getPreferInfo = getPreferInfo;
 module.exports.nearbySearch = nearbySearch;
 module.exports.getDistance = getDistance;
 module.exports.hasKeySchool = hasKeySchool;
 module.exports.getDistanceOfNearest = getDistanceOfNearest;
+module.exports.getGridPoints = getGridPoints;
