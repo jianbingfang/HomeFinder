@@ -42,15 +42,16 @@ var nearbySearch = function (params, succCallBack, failCallback) {
 
 
     nodegrass.get(url, function (data, status) {
-        var mData = JSON.parse(data);
-//        console.log(mData);
-        console.log("Service query: " + status);
+        console.log("nearbySearch query: " + status);
+        //console.log("nodegrass: " + data.toString());
         if (status === 200) {
+            var mData = JSON.parse(data);
+//            console.log(mData);
 //            mData.type = type;
             succCallBack(mData);
         } else {
             console.log('query: null...');
-            failCallback(mData.message);
+            failCallback(mData != undefined ? mData.message : 'nodegrass query failed...');
         }
     }, null, 'utf8').on('error', function (e) {
         console.log('error in nearbySearch');

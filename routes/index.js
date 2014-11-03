@@ -70,8 +70,7 @@ router.get('/distance/query', function (req, res) {
 
 router.get('/evaluate', function (req, res) {
 
-    //var queryInfo = req.query.queryInfo;
-
+    var queryInfo = req.query.queryInfo;
     var mapInfo = req.query.mapInfo;
 
     mapInfo.southWest.lat = parseFloat(mapInfo.southWest.lat);
@@ -79,10 +78,10 @@ router.get('/evaluate', function (req, res) {
     mapInfo.range.lat = parseFloat(mapInfo.range.lat);
     mapInfo.range.lng = parseFloat(mapInfo.range.lng);
 
-    var hotSpots = mapService.getGridPoints(mapInfo.southWest, mapInfo.range, {lng: 4, lat: 3});
+    var hotSpots = mapService.getGridPoints(mapInfo.southWest, mapInfo.range, {lng: 9, lat: 6});
 
     console.log(mapInfo);
-    //console.log(hotSpots);
+    console.log(queryInfo);
 
     var testData = {
         origination: {lat: 39.999277, lng: 116.348646},
@@ -93,7 +92,8 @@ router.get('/evaluate', function (req, res) {
     //    res.send(data);
     //});
 
-    core.getScoreOfPoints(hotSpots, testData.destination, function (data) {
+    var destination = queryInfo.location[0];
+    core.getScoreOfPoints(hotSpots, destination, function (data) {
         res.send(data);
     });
 

@@ -43,14 +43,15 @@ var getScore = function (origin, destination, callback) {
             filter: 'life',
             sort_name: 'distance',
             sort_rule: 0
-        }, function (distance) {
+        }, function (distanceArray) {
             /* 查询成功 */
-            console.log('distance query result: ' + distance.toString());
-            data.results.distance = distance;
+            console.log('distance query result: ' + distanceArray.toString());
+            data.results.distance = distanceArray;
 
-            //TODO 计算到目标点的距离
+            // 计算到目标点的距离
+            var d = util.distanceBetweenPoints(origin, destination);
 
-            var arg = [doesItHas, 0].concat(distance);
+            var arg = [doesItHas, d].concat(distanceArray);
             var score = evaluate(arg);
             console.log('>> SCORE: ' + score);
             data.results.score = score;
@@ -79,15 +80,23 @@ var getScoreOfPoints = function (originArray, destination, callback) {
     var getScoreOfPointsHelper = function (index, destination, callback) {
 
         if (index >= originArray.length) {
+
+            console.log('before norm: ');
+            console.log(data.results);
+            util.normalizeScore(data);
+            console.log('after norm: ');
+            console.log(data.results);
             return callback(data);
         }
 
         getScore(originArray[index], destination, function (dt) {
-            data.results.push({
-                lng: originArray[index].lng,
-                lat: originArray[index].lat,
-                count: dt.results.score || null
-            });
+            if (!!dt.results.score) {
+                data.results.push({
+                    lng: originArray[index].lng,
+                    lat: originArray[index].lat,
+                    count: dt.results.score
+                });
+            }
             getScoreOfPointsHelper(index + 1, destination, callback);
         });
     };

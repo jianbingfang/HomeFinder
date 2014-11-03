@@ -38,6 +38,44 @@ var lnglat2str = function (lnglat) {
     return lnglat.lat + "," + lnglat.lng;
 };
 
+var distanceBetweenPoints = function (p1, p2) {
+    if (!p1 || !p2) {
+        return 0;
+    }
+    var R = 6378137.0;
+    var dLat = (p2.lat - p1.lat) * Math.PI / 180;
+    var dLon = (p2.lng - p1.lng) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    return d;
+};
+
+var normalizeScore = function (param) {
+    if (param && param.results.length > 1) {
+        var data = param.results;
+        var max = data[0].count;
+        var min = data[0].count;
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].count > max) {
+                max = data[i].count;
+            }
+            if (data[i].count < min) {
+                min = data[i].count;
+            }
+        }
+        if (max !== min) {
+            for (i = 0; i < data.length; i++) {
+                data[i].count = 100 * (data[i].count - min) / (max - min);
+            }
+        }
+        return data;
+    }
+};
+
 module.exports.isKeyJuniorSchool = isKeyJuniorSchool;
 module.exports.isKeySeniorSchool = isKeySeniorSchool;
 module.exports.lnglat2str = lnglat2str;
+module.exports.distanceBetweenPoints = distanceBetweenPoints;
+module.exports.normalizeScore = normalizeScore;
