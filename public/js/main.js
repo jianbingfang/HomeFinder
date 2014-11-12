@@ -20,7 +20,7 @@ var geoc = new BMap.Geocoder();
  */
 var queryInfo = {
     location: [
-        map.getBounds().getCenter()
+        //map.getBounds().getCenter()
     ], // 可包含多个，格式为：{"lng" : 116, "lat" : 40}
     mode: "transit",   // 驾车为"driving"，公交为"transit"，默认值："transit"
     prefer: {
@@ -158,6 +158,24 @@ var icon = new BMap.Icon('../img/anchor.png', new BMap.Size(20, 32), {
     anchor: new BMap.Size(10, 30)
 });
 
+
+var removeMarker = function(e,ee,marker){
+    var pos=-1;
+    for (var key in queryInfo.location){
+        if ((marker.point.lng == queryInfo.location[key].lng) &&( marker.point.lat == queryInfo.location[key].lat)){
+            pos = parseInt(key);
+            break;
+        }
+    }
+    if (pos == -1) alert ('remove landmark error');
+    else{
+        var length=queryInfo.location.length;
+    queryInfo.location=queryInfo.location.slice(0,pos).concat(queryInfo.location.slice(pos+1,length));
+    map.removeOverlay(marker);
+    alert(queryInfo.location.length);
+    }
+}
+
 function addLandMark(e) {
     var mkr = new BMap.Marker(e.point, {icon: icon});
     map.addOverlay(mkr);
@@ -165,16 +183,48 @@ function addLandMark(e) {
     a.lng = e.point.lng;
     a.lat = e.point.lat;
 
+
+
     //landmark.push(e.point.lng);
     queryInfo.location.push(a);
+    var i = queryInfo.location.length;
+    mkr.enableDragging();
+    mkr.addEventListener("dragend", function(){
+    var p = mkr.getPosition();
+    var pos=0;
+    for (var key in queryInfo.location){
+        if ((a.lng == queryInfo.location[key].lng) &&(a.lat == queryInfo.location[key].lat)){
+            pos = key;
+            break;
+        }
+    }
+        console.log(parseInt(pos)+1);
+        queryInfo.location[parseInt(pos)] = {lng: p.lng, lat: p.lat};
+        a.lng=p.lng;a.lat=p.lat;
+    });
 
+    //创建右键菜单
+    var deleteLandMarkMenu=new BMap.ContextMenu();
+    deleteLandMarkMenu.addItem(new BMap.MenuItem('删除',removeMarker.bind(mkr)));
+    mkr.addContextMenu(deleteLandMarkMenu);
     alert(queryInfo.location.length);
     //alert(e.point.lng+","+e.point.lat);
 
+
 }
-//map.addEventListener("click", addLandMark);
+var rightclickpoint;
+function rightclick(e) {    
+    rightclickpoint = e;
+}
 
-
+map.addEventListener("rightclick", rightclick);
+var addLandMarkMenu = new BMap.ContextMenu();
+var addLandMarkMenuItem = [{
+    text:'添加锚点',
+    callback: function(){addLandMark(rightclickpoint)}
+}];
+addLandMarkMenu.addItem(new BMap.MenuItem(addLandMarkMenuItem[0].text,addLandMarkMenuItem[0].callback,100));
+map.addContextMenu(addLandMarkMenu);
 if (!isSupportCanvas()) {
     alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
 }
@@ -584,14 +634,14 @@ function isSupportCanvas() {
 
 $(document).ready(function () {
 
-    var destinationMarker = new BMap.Marker(map.getBounds().getCenter(), {icon: icon});
-    map.addOverlay(destinationMarker);
-    destinationMarker.enableDragging();
-    destinationMarker.addEventListener("dragend", function () {
-        var p = destinationMarker.getPosition();
-        console.log(p);
-        queryInfo.location[0] = {lng: p.lng, lat: p.lat};
-    });
+    //var destinationMarker = new BMap.Marker(map.getBounds().getCenter(), {icon: icon});
+    //map.addOverlay(destinationMarker);
+    //destinationMarker.enableDragging();
+    //destinationMarker.addEventListener("dragend", function () {
+    //    var p = destinationMarker.getPosition();
+    //    console.log(p);
+    //    queryInfo.location[0] = {lng: p.lng, lat: p.lat};
+    //s});
 
     // Util.setMapHeight();
     //var bounds = map.getBounds();
