@@ -454,17 +454,22 @@ function isSupportCanvas() {
 
     //绑定检索按钮事件
     $('#searchBtn').bind('click', function () {
-
-        Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
-
+        if (queryInfo.location.length == 0)
+        {
+            alert("no landmarks!")
+        }
+        else{
+            mapInfo.UpperleftLocation.lng = 116.323026;
+            mapInfo.UpperleftLocation.lat = 39.990074;
+            mapInfo.lngRange = 10;
+            mapInfo.latRange = 10;
+            mapInfo.resolution = 10;
+            Util.evaluateDuration(mapInfo, queryInfo);
+        //Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
+        }
         // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
 
-//        mapInfo.UpperleftLocation.lng = 116.323026;
-//        mapInfo.UpperleftLocation.lat = 39.990074;
-//        mapInfo.lngRange = 10;
-//        mapInfo.latRange = 10;
-//        mapInfo.resolution = 10;
-//        Util.evaluateDuration(mapInfo, queryInfo);
+
     });
 
     /**

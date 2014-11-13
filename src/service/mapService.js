@@ -151,14 +151,60 @@ var getDistanceRow = function (location, landmarks, column, result, succCallBack
 
 };
 
+
+var getDistanceRowNoneRecursively = function (location, landmarks, result, succCallBack, failCallback) {
+    console.log(1);
+    var originString = "origins=" + location.lat + "," + location.lng;
+    var destinationString = "destinations=" + landmarks[0].lat + "," + landmarks[0].lng;
+    for (var key in landmarks){
+
+        if (parseInt(key)==0) continue;
+        destinationString=destinationString+"|"+landmarks[key].lat+","+landmarks[key].lng;
+
+
+    }
+
+    var url = bmapDirectionHost + "?ak=" + ak + "&output=json" + "&" + originString + "&" + destinationString;
+    console.log(url);
+
+    nodegrass.get(url, function (data, status, headers) {
+        var mData = JSON.parse(data);
+        console.log("Service query [" + mData.type + "]:" + status);
+        console.log(url);
+        if (status === 200) {
+            //mData.type = type;
+            console.log(mData.result.elements);
+            var durationResult=[];
+            for (var key in mData.result.elements){
+                console.log(key+":"+mData.result.elements[key].duration.text.replace("分钟",""));
+                durationResult.push(parseInt(mData.result.elements[key].duration.text.replace("分钟","")));
+            }
+            succCallBack(durationResult);
+        } else {
+            console.log("get Distance Row None Recursively:"+status);
+            failCallback(mData);
+        }
+    }, null, 'utf8').on('error', function (e) {
+        console.log("get Distance Row None Recursively error: " + e.message);
+        failCallback(e);
+    });
+};
+
 var evaluateDuration = function (params, succCallBack, failCallback) {
     var type = params.type;
     var location = params.location;
     var landmarks = params.mQueryInfo.location;
     var result = [];
     console.log("length:" + landmarks.length);
+    if (landmarks.length > 5)
+    {getDistanceRow(location, landmarks, 0, result, succCallBack, failCallback);}
+    else
+    {
 
-    getDistanceRow(location, landmarks, 0, result, succCallBack, failCallback);
+        console.log("none recursively");
+        getDistanceRowNoneRecursively(location,landmarks, result, succCallBack,failCallback);
+    }
+
 };
 
 

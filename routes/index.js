@@ -93,6 +93,7 @@ router.get('/evaluate', function (req, res) {
     //});
 
     var destination = queryInfo.location[0];
+
     core.getScoreOfPoints(hotSpots, destination, function (data) {
         res.send(data);
     });
@@ -110,13 +111,14 @@ router.get('/duration/evaluate', function (req, res) {
         location: mapInfo.UpperleftLocation,
         mQueryInfo: mQueryInfo
     }, function (data) {
+        console.log("result:"+data);
+        //res.status(data).end();
         res.send(data);
         return;
     }, function (e) {
         console.log('error: ' + e.message);
         res.send('error: ' + e.message);
     });
-
 });
 
 module.exports = router;
