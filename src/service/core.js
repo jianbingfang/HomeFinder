@@ -20,54 +20,78 @@ var evaluate = function (data) {
     return score;
 };
 
-var getScore = function (origin, destination, callback) {
+var getScore = function (origin, destinations, callback) {
 
     var data = {
         status: 0,
         message: 'ok',
-        results: {}
+        results: {
+            score: [],
+            count: 0
+        }
     };
 
-    var mLocation = util.lnglat2str(origin);
+    var getScoreHelper = function (origin, destinations, index, callback) {
 
-    mapService.hasKeySchool({
-        location: mLocation
-    }, function (doesItHas) {
-        /* 查询成功 */
-        console.log('hasKeySchool query result: ' + doesItHas);
-        data.results.hasKeySchool = doesItHas;
+        if (index >= destinations.length) {
+            var sum = 0;
+            var num;
+            for (num = 0; num < data.results.score.length; num++) {
+                sum += data.results.score[num];
+            }
+            data.results.count = sum / num;
+            return callback(data);
+        }
 
-        mapService.getDistanceOfNearest({
-            location: mLocation,
-            keywords: keywords,
-            filter: 'life',
-            sort_name: 'distance',
-            sort_rule: 0
-        }, function (distanceArray) {
+        var mLocation = util.lnglat2str(origin);
+
+        mapService.hasKeySchool({
+            location: mLocation
+        }, function (doesItHas) {
+
             /* 查询成功 */
-            console.log('distance query result: ' + distanceArray.toString());
-            data.results.distance = distanceArray;
+            console.log('hasKeySchool query result: ' + doesItHas);
+            //data.results.hasKeySchool = doesItHas;
 
-            // 计算到目标点的距离
-            var d = util.distanceBetweenPoints(origin, destination);
+            mapService.getLocationOfNearest({
+                location: mLocation,
+                keywords: keywords,
+                filter: 'life',
+                radius: 3000,
+                sort_name: 'distance',
+                sort_rule: 0
+            }, function (locationArray) {
+                /* 查询成功 */
+                console.log('distance query result: ' + locationArray.toString());
+                //data.results.location = locationArray;
 
-            var arg = [doesItHas, d].concat(distanceArray);
-            var score = evaluate(arg);
-            console.log('>> SCORE: ' + score);
-            data.results.score = score;
-            callback(data);
+                // 计算到目标点的距离
+                // var d = util.distanceBetweenPoints(origin, destinations[index]);
+
+                var newLocationArray = [destinations[index]].concat(locationArray);
+
+                mapService.getDuration(origin, newLocationArray, function (durationArray) {
+                    var arg = [doesItHas].concat(durationArray);
+                    var score = evaluate(arg);
+                    console.log('>> SCORE: ' + score);
+                    data.results.score.push(score);
+                    getScoreHelper(origin, destinations, index + 1, callback);
+                }, function (message) {
+                    console.log("mapService.getDuration error: " + message);
+                    data.results.score.push(0);
+                    getScoreHelper(origin, destinations, index + 1, callback);
+                });
+
+            });
+
         });
 
-    }, function (message) {
-        /* 查询失败 */
-        console.log('hasKeySchool: ' + message);
-        data.status = 1;
-        data.message = message;
-        callback(data);
-    });
+    };
+
+    getScoreHelper(origin, destinations, 0, callback);
 };
 
-var getScoreOfPoints = function (originArray, destination, callback) {
+var getScoreOfPoints = function (originArray, destinationArray, callback) {
 
     var data = {
         status: 0,
@@ -77,10 +101,9 @@ var getScoreOfPoints = function (originArray, destination, callback) {
 
     console.log(originArray);
 
-    var getScoreOfPointsHelper = function (index, destination, callback) {
+    var getScoreOfPointsHelper = function (index, destinationArray, callback) {
 
         if (index >= originArray.length) {
-
             console.log('before norm: ');
             console.log(data.results);
             util.normalizeScore(data);
@@ -89,20 +112,20 @@ var getScoreOfPoints = function (originArray, destination, callback) {
             return callback(data);
         }
 
-        getScore(originArray[index], destination, function (dt) {
-            if (!!dt.results.score) {
+        getScore(originArray[index], destinationArray, function (dt) {
+            if (!!dt.results.count) {
                 data.results.push({
                     lng: originArray[index].lng,
                     lat: originArray[index].lat,
-                    count: dt.results.score
+                    count: dt.results.count
                 });
             }
-            getScoreOfPointsHelper(index + 1, destination, callback);
+            getScoreOfPointsHelper(index + 1, destinationArray, callback);
         });
     };
 
 
-    getScoreOfPointsHelper(0, destination, callback);
+    getScoreOfPointsHelper(0, destinationArray, callback);
 };
 
 //module.exports.evaluate = evaluate;

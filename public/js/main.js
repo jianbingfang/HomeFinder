@@ -106,17 +106,19 @@ var Util = {
     collectInfoOfPosition: function (position, mQueryInfo) {
 
         for (var key in mQueryInfo.prefer) {
-            mQueryInfo.prefer[key] = [];
-            $('#' + key + ' li input').each(function () {
-                if ($(this).is(':checked')) {
-                    mQueryInfo.prefer[key].push($(this).val());
-                }
-            });
+            if (mQueryInfo.prefer.hasOwnProperty(key)) {
+                mQueryInfo.prefer[key] = [];
+                $('#' + key + ' li input').each(function () {
+                    if ($(this).is(':checked')) {
+                        mQueryInfo.prefer[key].push($(this).val());
+                    }
+                });
 
-            if (mQueryInfo.prefer[key].length > 0) {
-                var keyword = mQueryInfo.prefer[key][0];
-                for (var i = 1; i < mQueryInfo.prefer[key].length; i++) {
-                    keyword += '$' + mQueryInfo.prefer[key][i];
+                if (mQueryInfo.prefer[key].length > 0) {
+                    var keyword = mQueryInfo.prefer[key][0];
+                    for (var i = 1; i < mQueryInfo.prefer[key].length; i++) {
+                        keyword += '$' + mQueryInfo.prefer[key][i];
+                    }
                 }
             }
         }
@@ -159,20 +161,20 @@ var icon = new BMap.Icon('../img/anchor.png', new BMap.Size(20, 32), {
 });
 
 
-var removeMarker = function(e,ee,marker){
-    var pos=-1;
-    for (var key in queryInfo.location){
-        if ((marker.point.lng == queryInfo.location[key].lng) &&( marker.point.lat == queryInfo.location[key].lat)){
+var removeMarker = function (e, ee, marker) {
+    var pos = -1;
+    for (var key in queryInfo.location) {
+        if ((marker.point.lng == queryInfo.location[key].lng) && ( marker.point.lat == queryInfo.location[key].lat)) {
             pos = parseInt(key);
             break;
         }
     }
-    if (pos == -1) alert ('remove landmark error');
-    else{
-        var length=queryInfo.location.length;
-    queryInfo.location=queryInfo.location.slice(0,pos).concat(queryInfo.location.slice(pos+1,length));
-    map.removeOverlay(marker);
-    alert(queryInfo.location.length);
+    if (pos == -1) alert('remove landmark error');
+    else {
+        var length = queryInfo.location.length;
+        queryInfo.location = queryInfo.location.slice(0, pos).concat(queryInfo.location.slice(pos + 1, length));
+        map.removeOverlay(marker);
+        alert(queryInfo.location.length);
     }
 }
 
@@ -184,46 +186,48 @@ function addLandMark(e) {
     a.lat = e.point.lat;
 
 
-
     //landmark.push(e.point.lng);
     queryInfo.location.push(a);
     var i = queryInfo.location.length;
     mkr.enableDragging();
-    mkr.addEventListener("dragend", function(){
-    var p = mkr.getPosition();
-    var pos=0;
-    for (var key in queryInfo.location){
-        if ((a.lng == queryInfo.location[key].lng) &&(a.lat == queryInfo.location[key].lat)){
-            pos = key;
-            break;
+    mkr.addEventListener("dragend", function () {
+        var p = mkr.getPosition();
+        var pos = 0;
+        for (var key in queryInfo.location) {
+            if ((a.lng == queryInfo.location[key].lng) && (a.lat == queryInfo.location[key].lat)) {
+                pos = key;
+                break;
+            }
         }
-    }
-        console.log(parseInt(pos)+1);
+        console.log(parseInt(pos) + 1);
         queryInfo.location[parseInt(pos)] = {lng: p.lng, lat: p.lat};
-        a.lng=p.lng;a.lat=p.lat;
+        a.lng = p.lng;
+        a.lat = p.lat;
     });
 
     //创建右键菜单
-    var deleteLandMarkMenu=new BMap.ContextMenu();
-    deleteLandMarkMenu.addItem(new BMap.MenuItem('删除',removeMarker.bind(mkr)));
+    var deleteLandMarkMenu = new BMap.ContextMenu();
+    deleteLandMarkMenu.addItem(new BMap.MenuItem('删除', removeMarker.bind(mkr)));
     mkr.addContextMenu(deleteLandMarkMenu);
-    alert(queryInfo.location.length);
+    //alert(queryInfo.location.length);
     //alert(e.point.lng+","+e.point.lat);
 
 
 }
 var rightclickpoint;
-function rightclick(e) {    
+function rightclick(e) {
     rightclickpoint = e;
 }
 
 map.addEventListener("rightclick", rightclick);
 var addLandMarkMenu = new BMap.ContextMenu();
 var addLandMarkMenuItem = [{
-    text:'添加锚点',
-    callback: function(){addLandMark(rightclickpoint)}
+    text: '添加锚点',
+    callback: function () {
+        addLandMark(rightclickpoint)
+    }
 }];
-addLandMarkMenu.addItem(new BMap.MenuItem(addLandMarkMenuItem[0].text,addLandMarkMenuItem[0].callback,100));
+addLandMarkMenu.addItem(new BMap.MenuItem(addLandMarkMenuItem[0].text, addLandMarkMenuItem[0].callback, 100));
 map.addContextMenu(addLandMarkMenu);
 if (!isSupportCanvas()) {
     alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
@@ -454,18 +458,17 @@ function isSupportCanvas() {
 
     //绑定检索按钮事件
     $('#searchBtn').bind('click', function () {
-        if (queryInfo.location.length == 0)
-        {
-            alert("no landmarks!")
+        if (queryInfo.location.length == 0) {
+            alert("no landmarks!");
         }
-        else{
+        else {
             mapInfo.UpperleftLocation.lng = 116.323026;
             mapInfo.UpperleftLocation.lat = 39.990074;
             mapInfo.lngRange = 10;
             mapInfo.latRange = 10;
             mapInfo.resolution = 10;
-            Util.evaluateDuration(mapInfo, queryInfo);
-        //Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
+            //Util.evaluateDuration(mapInfo, queryInfo);
+            Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
         }
         // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
 

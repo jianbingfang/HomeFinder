@@ -153,15 +153,16 @@ var getDistanceRow = function (location, landmarks, column, result, succCallBack
 
 
 var getDistanceRowNoneRecursively = function (location, landmarks, result, succCallBack, failCallback) {
-    console.log(1);
+
     var originString = "origins=" + location.lat + "," + location.lng;
     var destinationString = "destinations=" + landmarks[0].lat + "," + landmarks[0].lng;
-    for (var key in landmarks){
-
-        if (parseInt(key)==0) continue;
-        destinationString=destinationString+"|"+landmarks[key].lat+","+landmarks[key].lng;
-
-
+    for (var key in landmarks) {
+        if (landmarks.hasOwnProperty(key)) {
+            if (parseInt(key) === 0) {
+                continue;
+            }
+            destinationString = destinationString + "|" + landmarks[key].lat + "," + landmarks[key].lng;
+        }
     }
 
     var url = bmapDirectionHost + "?ak=" + ak + "&output=json" + "&" + originString + "&" + destinationString;
@@ -174,14 +175,16 @@ var getDistanceRowNoneRecursively = function (location, landmarks, result, succC
         if (status === 200) {
             //mData.type = type;
             console.log(mData.result.elements);
-            var durationResult=[];
-            for (var key in mData.result.elements){
-                console.log(key+":"+mData.result.elements[key].duration.text.replace("分钟",""));
-                durationResult.push(parseInt(mData.result.elements[key].duration.text.replace("分钟","")));
+            var durationResult = [];
+            for (var key in mData.result.elements) {
+                if (mData.result.elements.hasOwnProperty(key)) {
+                    console.log(key + ":" + mData.result.elements[key].duration.text.replace("分钟", ""));
+                    durationResult.push(parseInt(mData.result.elements[key].duration.text.replace("分钟", "")));
+                }
             }
             succCallBack(durationResult);
         } else {
-            console.log("get Distance Row None Recursively:"+status);
+            console.log("get Distance Row None Recursively:" + status);
             failCallback(mData);
         }
     }, null, 'utf8').on('error', function (e) {
@@ -196,17 +199,26 @@ var evaluateDuration = function (params, succCallBack, failCallback) {
     var landmarks = params.mQueryInfo.location;
     var result = [];
     console.log("length:" + landmarks.length);
-    if (landmarks.length > 5)
-    {getDistanceRow(location, landmarks, 0, result, succCallBack, failCallback);}
-    else
-    {
-
+    if (landmarks.length > 5) {
+        getDistanceRow(location, landmarks, 0, result, succCallBack, failCallback);
+    } else {
         console.log("none recursively");
-        getDistanceRowNoneRecursively(location,landmarks, result, succCallBack,failCallback);
+        getDistanceRowNoneRecursively(location, landmarks, result, succCallBack, failCallback);
     }
 
 };
 
+var getDuration = function (origin, destinations, succCallBack, failCallback) {
+    var result = [];
+    console.log("length:" + destinations.length);
+    if (destinations.length > 5) {
+        getDistanceRow(origin, destinations, 0, result, succCallBack, failCallback);
+    } else {
+        console.log("none recursively");
+        getDistanceRowNoneRecursively(origin, destinations, result, succCallBack, failCallback);
+    }
+
+};
 
 var getDistance = function (params, succCallBack, failCallback) {
     //params=['oringin':[[lat11,lng11],[lat12,lng12],....],'destination':[[lat21,lng21],[lat22,lng22],...]]
@@ -241,12 +253,11 @@ var getDistance = function (params, succCallBack, failCallback) {
 /**
  * 判断待考察地点附近是否有重点中学
  * @param params
- * @param succCallBack
- * @param failCallback
+ * @param callback
  */
-var hasKeySchool = function (params, succCallBack, failCallback) {
+var hasKeySchool = function (params, callback) {
 
-    var hasKeySchoolHelper = function (params, pageNum, succCallBack, failCallback) {
+    var hasKeySchoolHelper = function (params, pageNum, callback) {
 
         var mLocation = params.location;
         var mRadius = params.radius || 1500;    // default: 1.5km
@@ -278,37 +289,35 @@ var hasKeySchool = function (params, succCallBack, failCallback) {
                 }
 
                 if (hasKeySchool === 1) {
-                    succCallBack(1);
+                    callback(1);
                 } else {
                     if (pageNum * mPageSize + data.results.length >= data.total) {
-                        succCallBack(0);
+                        callback(0);
                     } else {
-                        hasKeySchoolHelper(params, pageNum + 1, succCallBack, failCallback);
+                        hasKeySchoolHelper(params, pageNum + 1, callback);
                     }
                 }
             } else {
-                failCallback(data.message);
+                console.log("hasKeySchoolHelper error: " + data.message);
+                callback(0);
             }
-        }, function (message) {
-            /* 查询失败 */
-            failCallback(message);
         });
     };
 
-    hasKeySchoolHelper(params, 0, succCallBack, failCallback);
+    hasKeySchoolHelper(params, 0, callback);
 };
 
-var getDistanceOfNearest = function (params, callback) {
+var getLocationOfNearest = function (params, callback) {
 
     var results = [];
 
-    var getDistanceOfNearestHelper = function (params, index, mCallback) {
+    var getLocationOfNearestHelper = function (params, index, mCallback) {
 
         if (index >= params.keywords.length) {
             return mCallback(results);
         }
 
-        console.log('caculating distance of ' + params.keywords[index]);
+        console.log('get location of ' + params.keywords[index]);
 
         var mLocation = params.location;
         var mKeyword = params.keywords[index];
@@ -335,22 +344,22 @@ var getDistanceOfNearest = function (params, callback) {
             //console.log(data);
             if (data.status === 0 && data.results.length > 0) {
                 /* 若数据获取成功 */
-                results.push(data.results[0].detail_info.distance);
+                results.push(data.results[0].location);
             } else {
-                /* 若数据为空 */
-                results.push(0);
+                /* 若数据为空，赋值起始点坐标以不影响分数计算 */
+                results.push(mLocation);
             }
-            getDistanceOfNearestHelper(params, index + 1, mCallback);
+            getLocationOfNearestHelper(params, index + 1, mCallback);
         }, function (message) {
             /* 查询失败 */
             console.log('getDistanceOfNearestHelper[' + index + '] error: ' + message);
-            results.push(0);
-            getDistanceOfNearestHelper(params, index + 1, mCallback);
+            results.push(mLocation);
+            getLocationOfNearestHelper(params, index + 1, mCallback);
         });
 
     };
 
-    getDistanceOfNearestHelper(params, 0, callback);
+    getLocationOfNearestHelper(params, 0, callback);
 };
 
 var getGridPoints = function (southWest, range, size) {
@@ -379,5 +388,6 @@ module.exports.getPreferInfo = getPreferInfo;
 module.exports.nearbySearch = nearbySearch;
 module.exports.getDistance = getDistance;
 module.exports.hasKeySchool = hasKeySchool;
-module.exports.getDistanceOfNearest = getDistanceOfNearest;
+module.exports.getLocationOfNearest = getLocationOfNearest;
 module.exports.getGridPoints = getGridPoints;
+module.exports.getDuration = getDuration;
