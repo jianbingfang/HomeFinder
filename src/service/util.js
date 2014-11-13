@@ -9,18 +9,20 @@ var school = require('../model/keySchool');
 var isInSchoolList = function (list, name) {
 
     for (var school in list) {
-        var tag = true;
-        var lastPos = -1;
-        for (var i = 0; i < list[school].length; i++) {
-            lastPos = name.substring(lastPos + 1).indexOf(list[school][i]);
-            if (lastPos === -1) {
-                tag = false;
-                break;
+        if (list.hasOwnProperty(school)) {
+            var tag = true;
+            var lastPos = -1;
+            for (var i = 0; i < list[school].length; i++) {
+                lastPos = name.substring(lastPos + 1).indexOf(list[school][i]);
+                if (lastPos === -1) {
+                    tag = false;
+                    break;
+                }
             }
-        }
-        if (tag === true) {
-            console.log('key school matched: ' + list[school]);
-            return true;
+            if (tag === true) {
+                console.log('key school matched: ' + list[school]);
+                return true;
+            }
         }
     }
     return false;

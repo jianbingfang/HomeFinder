@@ -44,14 +44,15 @@ var nearbySearch = function (params, succCallBack, failCallback) {
     nodegrass.get(url, function (data, status) {
         console.log("nearbySearch query: " + status);
         //console.log("nodegrass: " + data.toString());
+        var mData;
         if (status === 200) {
-            var mData = JSON.parse(data);
+            mData = JSON.parse(data);
 //            console.log(mData);
 //            mData.type = type;
             succCallBack(mData);
         } else {
             console.log('query: null...');
-            failCallback(mData != undefined ? mData.message : 'nodegrass query failed...');
+            failCallback(mData !== undefined ? mData.message : 'nodegrass query failed...');
         }
     }, null, 'utf8').on('error', function (e) {
         console.log('error in nearbySearch');
@@ -221,10 +222,12 @@ var hasKeySchool = function (params, succCallBack, failCallback) {
                 /* 若数据获取成功 */
                 var hasKeySchool = 0;
                 for (var school in data.results) {
-                    console.log('judging school: ' + data.results[school].name);
-                    if (util.isKeyJuniorSchool(data.results[school].name) === true) {
-                        hasKeySchool = 1;
-                        break;
+                    if (data.results.hasOwnProperty(school)) {
+                        console.log('judging school: ' + data.results[school].name);
+                        if (util.isKeyJuniorSchool(data.results[school].name) === true) {
+                            hasKeySchool = 1;
+                            break;
+                        }
                     }
                 }
 
