@@ -10,7 +10,7 @@ var map = new BMap.Map("map");                              // 创建Map实例
     map.addControl(new BMap.ScaleControl());                // 添加比例尺控件
     map.addControl(new BMap.OverviewMapControl());          // 添加缩略地图控件
     map.addControl(new BMap.MapTypeControl());              // 添加地图类型控件
-    map.centerAndZoom(new BMap.Point(116.348646, 39.999277), 15); // 初始化地图,设置中心点坐标和地图级别
+    map.centerAndZoom(new BMap.Point(116.404, 39.915), 12); // 初始化地图,设置中心点坐标和地图级别
     map.setCurrentCity("北京");                             //由于有3D图，需要设置城市哦
 }();
 
@@ -150,7 +150,7 @@ var Util = {
             alert("nearby search service error!");
         });
     }
-}
+};
 
 var hotSpots = [];
 
@@ -176,7 +176,7 @@ var removeMarker = function (e, ee, marker) {
         map.removeOverlay(marker);
         alert(queryInfo.location.length);
     }
-}
+};
 
 function addLandMark(e) {
     var mkr = new BMap.Marker(e.point, {icon: icon});
@@ -214,6 +214,7 @@ function addLandMark(e) {
 
 
 }
+
 var rightclickpoint;
 function rightclick(e) {
     rightclickpoint = e;
@@ -246,7 +247,6 @@ if (!isSupportCanvas()) {
  其中 key 表示插值的位置, 0~1.
  value 为颜色值.
  */
-
 
 var heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 30});
 
@@ -282,6 +282,42 @@ function setGradient() {
 function isSupportCanvas() {
     var elem = document.createElement('canvas');
     return !!(elem.getContext && elem.getContext('2d'));
+}
+
+function showGridline() {
+
+    var southWest = {lng: 116.278054, lat: 39.836982};
+    var northEast = {lng: 116.496234, lat: 39.996691};
+    var gridSize = 0.00610799999999756; // 500m
+    var gridSizeLng = gridSize * 1.3;
+
+    var i = 0;
+    while (southWest.lat + i * gridSize < northEast.lat) {
+        var line = new BMap.Polyline([
+            new BMap.Point(southWest.lng, southWest.lat + i * gridSize),
+            new BMap.Point(northEast.lng, southWest.lat + i * gridSize)
+        ], {strokeColor: "blue", strokeWeight: 2, strokeOpacity: 0.8});
+        map.addOverlay(line);
+        i++;
+    }
+
+    i = 0;
+    while (southWest.lng + i * gridSizeLng < northEast.lng) {
+        var line = new BMap.Polyline([
+            new BMap.Point(southWest.lng + i * gridSizeLng, southWest.lat),
+            new BMap.Point(southWest.lng + i * gridSizeLng, northEast.lat)
+        ], {strokeColor: "blue", strokeWeight: 2, strokeOpacity: 0.8});
+        map.addOverlay(line);
+        i++;
+    }
+
+    map.addEventListener("click", function (e) {
+
+        var x = Math.floor((e.point.lng - southWest.lng) / gridSizeLng) + 1;
+        var y = Math.floor((e.point.lat - southWest.lat) / gridSize) + 1;
+
+        $('#gridCoordinate').html('(' + x + ',' + y + ')');
+    });
 }
 
 !function () {
@@ -388,24 +424,6 @@ function isSupportCanvas() {
             $(this).parents('label').removeClass('activate');
         }
 
-        /*var type = $(this).parents('dl').attr('value');
-         $('#' + type + " li a").removeClass('activate');
-         if (!$(this).hasClass('activate')) { //点击的不是当前的选项
-         $(this).addClass('activate');
-         $('#selectedValue div[type$=' + type + ']').remove(); //当前条件之前选择过的条件删除
-         var item = $('<div class="span1" value="' + $(this).attr('value') + '" type="' + type + '"><span>' + $(this).html() + '</span></div>');
-         //添加删除按钮
-         var deleteBtn = $('<i class="icon-remove"></i>').click(function () {
-         $(this).parent().remove();
-         $('#' + type + " li a").removeClass('activate');
-         keyword = $('#keyword').val();
-         searchAction(keyword);
-         });
-         deleteBtn.appendTo(item);
-         item.appendTo('#selectedValue'); //添加当前的筛选条件
-         keyword = $('#keyword').val();
-         searchAction(keyword);
-         }*/
     });
 
     //条件筛选模块相关代码 end
@@ -471,8 +489,6 @@ function isSupportCanvas() {
             Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
         }
         // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
-
-
     });
 
     /**
@@ -521,8 +537,11 @@ function isSupportCanvas() {
             if ($('#mapBox').is(":visible")) { //单显示地图时候，设置最佳视野
                 map.setViewport(points);
             }
-            ;
         });
+    });
+
+    $('#toggleGridline').bind('click', function () {
+        showGridline();
     });
 
     /**
@@ -637,25 +656,9 @@ function isSupportCanvas() {
 
     searchAction(keyword);
 
-
 }();
 
 $(document).ready(function () {
-
-    //var destinationMarker = new BMap.Marker(map.getBounds().getCenter(), {icon: icon});
-    //map.addOverlay(destinationMarker);
-    //destinationMarker.enableDragging();
-    //destinationMarker.addEventListener("dragend", function () {
-    //    var p = destinationMarker.getPosition();
-    //    console.log(p);
-    //    queryInfo.location[0] = {lng: p.lng, lat: p.lat};
-    //s});
-
-    // Util.setMapHeight();
-    //var bounds = map.getBounds();
-    //alert(bounds.toSpan().lat + '==' + (bounds.getNorthEast().lat - bounds.getSouthWest().lat));
-    //map.addOverlay(new BMap.Marker(bounds.getNorthEast(), {icon: icon}));
-    //map.addOverlay(new BMap.Marker(bounds.getCenter(), {icon: icon}));
 
 });
 
