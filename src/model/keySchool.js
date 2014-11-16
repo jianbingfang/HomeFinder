@@ -107,10 +107,10 @@ var keySeniorSchool = [
     ['门头沟大峪中学']
 ];
 
-module.exports.getKeyJuniorSchool = function () {
+exports.getKeyJuniorSchool = function () {
     return keyJuniorSchool;
 };
 
-module.exports.getKeySeniorSchool = function () {
+exports.getKeySeniorSchool = function () {
     return keySeniorSchool;
 };

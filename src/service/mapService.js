@@ -301,6 +301,9 @@ var hasKeySchool = function (params, callback) {
                 console.log("hasKeySchoolHelper error: " + data.message);
                 callback(0);
             }
+        }, function (message) {
+            console.log("hasKeySchoolHelper error: " + message);
+            callback(0);
         });
     };
 
@@ -352,7 +355,7 @@ var getLocationOfNearest = function (params, callback) {
             getLocationOfNearestHelper(params, index + 1, mCallback);
         }, function (message) {
             /* 查询失败 */
-            console.log('getDistanceOfNearestHelper[' + index + '] error: ' + message);
+            console.log('getLocationOfNearestHelper[' + index + '] error: ' + message);
             results.push(mLocation);
             getLocationOfNearestHelper(params, index + 1, mCallback);
         });
@@ -362,7 +365,7 @@ var getLocationOfNearest = function (params, callback) {
     getLocationOfNearestHelper(params, 0, callback);
 };
 
-var getGridPoints = function (southWest, range, size) {
+var getGridPoints = function (southWest, range, size, scaling) {
 
     var grid = {
         lngRange: range.lng / (size.lng - 1),
@@ -371,8 +374,9 @@ var getGridPoints = function (southWest, range, size) {
 
     var spots = [];
 
-    for (var i = 0; i < size.lat; i++) {
-        for (var j = 0; j < size.lng; j++) {
+    var i, j;
+    for (i = 0; i < size.lat; i++) {
+        for (j = 0; j < size.lng; j++) {
             spots.push({
                 lng: southWest.lng + grid.lngRange * j,
                 lat: southWest.lat + grid.latRange * i
@@ -380,14 +384,27 @@ var getGridPoints = function (southWest, range, size) {
         }
     }
 
+    scaling = scaling || 0.8;
+    if (scaling > 0 && scaling < 1) {
+        var center = {
+            lng: southWest.lng + range.lng / 2,
+            lat: southWest.lat + range.lat / 2
+        };
+
+        for (i = 0; i < spots.length; i++) {
+            spots[i].lng = (spots[i].lng - center.lng) * scaling + center.lng;
+            spots[i].lat = (spots[i].lat - center.lat) * scaling + center.lat;
+        }
+    }
+
     return spots;
 };
 
-module.exports.evaluateDuration = evaluateDuration;
-module.exports.getPreferInfo = getPreferInfo;
-module.exports.nearbySearch = nearbySearch;
-module.exports.getDistance = getDistance;
-module.exports.hasKeySchool = hasKeySchool;
-module.exports.getLocationOfNearest = getLocationOfNearest;
-module.exports.getGridPoints = getGridPoints;
-module.exports.getDuration = getDuration;
+exports.evaluateDuration = evaluateDuration;
+exports.getPreferInfo = getPreferInfo;
+exports.nearbySearch = nearbySearch;
+exports.getDistance = getDistance;
+exports.hasKeySchool = hasKeySchool;
+exports.getLocationOfNearest = getLocationOfNearest;
+exports.getGridPoints = getGridPoints;
+exports.getDuration = getDuration;

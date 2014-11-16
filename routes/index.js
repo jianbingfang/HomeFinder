@@ -78,7 +78,7 @@ router.get('/evaluate', function (req, res) {
     mapInfo.range.lat = parseFloat(mapInfo.range.lat);
     mapInfo.range.lng = parseFloat(mapInfo.range.lng);
 
-    var hotSpots = mapService.getGridPoints(mapInfo.southWest, mapInfo.range, {lng: 8, lat: 6});
+    var hotSpots = mapService.getGridPoints(mapInfo.southWest, mapInfo.range, {lng: 12, lat: 8}, 0.6);
 
     console.log(mapInfo);
     console.log(queryInfo);
@@ -111,7 +111,7 @@ router.get('/duration/evaluate', function (req, res) {
         location: mapInfo.UpperleftLocation,
         mQueryInfo: mQueryInfo
     }, function (data) {
-        console.log("result:"+data);
+        console.log("result:" + data);
         //res.status(data).end();
         res.send(data);
         return;

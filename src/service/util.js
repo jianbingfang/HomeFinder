@@ -75,8 +75,8 @@ var normalizeScore = function (param) {
     }
 };
 
-module.exports.isKeyJuniorSchool = isKeyJuniorSchool;
-module.exports.isKeySeniorSchool = isKeySeniorSchool;
-module.exports.lnglat2str = lnglat2str;
-module.exports.distanceBetweenPoints = distanceBetweenPoints;
-module.exports.normalizeScore = normalizeScore;
+exports.isKeyJuniorSchool = isKeyJuniorSchool;
+exports.isKeySeniorSchool = isKeySeniorSchool;
+exports.lnglat2str = lnglat2str;
+exports.distanceBetweenPoints = distanceBetweenPoints;
+exports.normalizeScore = normalizeScore;

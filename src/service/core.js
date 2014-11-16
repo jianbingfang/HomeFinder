@@ -99,7 +99,7 @@ var getScoreOfPoints = function (originArray, destinationArray, callback) {
         results: []
     };
 
-    console.log(originArray);
+    //console.log(originArray);
 
     var getScoreOfPointsHelper = function (index, destinationArray, callback) {
 
@@ -128,6 +128,6 @@ var getScoreOfPoints = function (originArray, destinationArray, callback) {
     getScoreOfPointsHelper(0, destinationArray, callback);
 };
 
-//module.exports.evaluate = evaluate;
-module.exports.getScore = getScore;
-module.exports.getScoreOfPoints = getScoreOfPoints;
+//exports.evaluate = evaluate;
+exports.getScore = getScore;
+exports.getScoreOfPoints = getScoreOfPoints;

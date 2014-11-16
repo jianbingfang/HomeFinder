@@ -1,7 +1,7 @@
 'use strict';
 
 var map = new BMap.Map("map");                              // 创建Map实例
-var geoc = new BMap.Geocoder();
+//var geoc = new BMap.Geocoder();
 !function () { //初始化地图模块相关代码
     map.enableScrollWheelZoom();                            // 启用滚轮放大缩小 
     map.enableContinuousZoom();                             // 启用地图惯性拖拽，默认禁用
@@ -248,7 +248,7 @@ if (!isSupportCanvas()) {
  */
 
 
-var heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 40});
+var heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 30});
 
 //渲染热力图
 function renderHeatmap() {
