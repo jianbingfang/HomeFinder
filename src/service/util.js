@@ -6,7 +6,7 @@
 
 var school = require('../model/keySchool');
 
-var isInSchoolList = function (list, name) {
+exports.isInSchoolList = function (list, name) {
 
     for (var school in list) {
         if (list.hasOwnProperty(school)) {
@@ -28,19 +28,19 @@ var isInSchoolList = function (list, name) {
     return false;
 };
 
-var isKeyJuniorSchool = function (name) {
+exports.isKeyJuniorSchool = function (name) {
     return isInSchoolList(school.getKeyJuniorSchool(), name);
 };
 
-var isKeySeniorSchool = function (name) {
+exports.isKeySeniorSchool = function (name) {
     return isInSchoolList(school.getKeySeniorSchool(), name);
 };
 
-var lnglat2str = function (lnglat) {
+exports.lnglat2str = function (lnglat) {
     return lnglat.lat + "," + lnglat.lng;
 };
 
-var distanceBetweenPoints = function (p1, p2) {
+exports.distanceBetweenPoints = function (p1, p2) {
     if (!p1 || !p2) {
         return 0;
     }
@@ -53,7 +53,7 @@ var distanceBetweenPoints = function (p1, p2) {
     return R * c;
 };
 
-var normalizeScore = function (param) {
+exports.normalizeScore = function (param) {
     if (param && param.results.length > 1) {
         var data = param.results;
         var max = data[0].count;
@@ -74,9 +74,3 @@ var normalizeScore = function (param) {
         return data;
     }
 };
-
-exports.isKeyJuniorSchool = isKeyJuniorSchool;
-exports.isKeySeniorSchool = isKeySeniorSchool;
-exports.lnglat2str = lnglat2str;
-exports.distanceBetweenPoints = distanceBetweenPoints;
-exports.normalizeScore = normalizeScore;

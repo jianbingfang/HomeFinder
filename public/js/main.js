@@ -1,6 +1,6 @@
 'use strict';
 
-var map = new BMap.Map("map");                              // 创建Map实例
+var map = new BMap.Map("map", {minZoom: 12, maxZoom: 16});                              // 创建Map实例
 //var geoc = new BMap.Geocoder();
 !function () { //初始化地图模块相关代码
     map.enableScrollWheelZoom();                            // 启用滚轮放大缩小 
@@ -14,6 +14,84 @@ var map = new BMap.Map("map");                              // 创建Map实例
     map.setCurrentCity("北京");                             //由于有3D图，需要设置城市哦
 }();
 
+var southWest = {lng: 116.213828, lat: 39.864778};
+var northEast = {lng: 116.555401, lat: 40.029763};
+var gridSizeLat = 0.00610799999999756; // 500m
+var gridSizeLng = gridSizeLat * 1.3;
+
+var alpha = 158.7298;
+var hotSpots = [];
+var hotestSpotsMaker = [];
+
+var currentLandmark = {};
+
+/**
+ * 条件筛选模块相关代码 start
+ * 条件筛选的数据
+ */
+var tagData = [
+    {
+        "name": "工作",
+        "value": "job",
+        "data": [
+            {
+                "name": "CBD",
+                "value": "job1",
+                "beta": -0.01964,
+                "coord": {x: 23, y: 12}
+            },
+            {
+                "name": "金融街",
+                "value": "job2",
+                "beta": -0.01337,
+                "coord": {x: 11, y: 13}
+            },
+            {
+                "name": "中关村/海淀黄庄",
+                "value": "job3",
+                "beta": -0.00563,
+                "coord": {x: 5, y: 23}
+            }
+        ]
+    },
+    {
+        "name": "医院",
+        "value": "hospital",
+        "data": [
+            {
+                "name": "北京同仁医院",
+                "value": "hospital1",
+                "beta": -0.00857,
+                "coord": {x: 18, y: 12}
+            },
+            {
+                "name": "空军总医院",
+                "value": "hospital2",
+                "beta": -0.00857,
+                "coord": {x: 3, y: 15}
+            }
+        ]
+    },
+    {
+        "name": "公园",
+        "value": "park",
+        "data": [
+            {
+                "name": "天坛公园",
+                "value": "park1",
+                "beta": -0.01873,
+                "coord": {x: 17, y: 8}
+            },
+            {
+                "name": "玉渊潭公园",
+                "value": "park2",
+                "beta": -0.01,
+                "coord": {x: 5, y: 14}
+            }
+        ]
+    }
+];
+
 /**
  * 一次查询需要用户提供的信息
  * @type {{location: {lng: number, lat: number}[], mode: string, prefer: {cater: Array, entertainment: Array, sport: Array}}}
@@ -24,9 +102,9 @@ var queryInfo = {
     ], // 可包含多个，格式为：{"lng" : 116, "lat" : 40}
     mode: "transit",   // 驾车为"driving"，公交为"transit"，默认值："transit"
     prefer: {
-        cater: [],
-        entertainment: [],
-        sport: []
+        job: [],
+        hospital: [],
+        park: []
     }
 };
 
@@ -65,6 +143,20 @@ var Util = {
         };
         return lease[type];
     },
+
+    getHotspotRadiusByZoomLevel: function (zoomLevel) {
+        var lease = {
+            '10': 5,
+            '11': 10,
+            '12': 13,
+            '13': 23,
+            '14': 45,
+            '15': 70,
+            '16': 90
+        };
+        return lease[zoomLevel] / 1.8;
+    },
+
     /**
      * 设置Map容器的高度
      */
@@ -83,6 +175,119 @@ var Util = {
         }).fail(function () {
             alert("get distance service error!");
         });
+    },
+
+    distanceBetweenPoints: function (p1, p2) {
+        if (!p1 || !p2) {
+            return 0;
+        }
+        return map.getDistance(p1, p2);
+    },
+
+    getGridPoints: function (southWest, northEast) {
+
+        var grid = {
+            lngRange: gridSizeLng / 2,
+            latRange: gridSizeLat / 2
+        };
+
+        var size = {
+            lng: Math.floor((northEast.lng - southWest.lng) / grid.lngRange),
+            lat: Math.floor((northEast.lat - southWest.lat) / grid.latRange)
+        };
+
+        var offset = {
+            lng: grid.lngRange / 2,
+            lat: grid.latRange / 2
+        }
+
+        var spots = [];
+
+        var i, j;
+        for (i = 0; i < size.lat; i++) {
+            for (j = 0; j < size.lng; j++) {
+                spots.push({
+                    lng: southWest.lng + grid.lngRange * j + offset.lng,
+                    lat: southWest.lat + grid.latRange * i + offset.lat
+                });
+            }
+        }
+
+        return spots;
+    },
+
+    getGridId: function (coordinate) {
+
+        var size = {
+            lng: Math.floor((northEast.lng - southWest.lng) / gridSizeLng),
+            lat: Math.floor((northEast.lat - southWest.lat) / gridSizeLat)
+        };
+
+        var coord = {
+            lng: Math.floor((coordinate.lng - southWest.lng) / gridSizeLng),
+            lat: Math.floor((coordinate.lat - southWest.lat) / gridSizeLat)
+        };
+
+        return (coord.lat * size.lng + coord.lng);
+    },
+
+    coord2lnglat: function (coordinate) {
+        return {
+            lng: southWest.lng + gridSizeLng * (coordinate.x + 0.5),
+            lat: southWest.lat + gridSizeLat * (coordinate.y + 0.5)
+        };
+    },
+
+    getLocationById: function (id) {
+        for (var i = 0; i < tagData.length; i++) {
+            for (var j = 0; j < tagData[i].data.length; j++) {
+                if (tagData[i].data[j].value == id) {
+                    return tagData[i].data[j];
+                }
+            }
+        }
+        return null;
+    },
+
+    normalizeScore: function (data) {
+        if (data && data.length > 1) {
+            var max = data[0].count;
+            var min = data[0].count;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].count > max) {
+                    max = data[i].count;
+                }
+                if (data[i].count < min) {
+                    min = data[i].count;
+                }
+            }
+            if (max !== min) {
+                for (i = 0; i < data.length; i++) {
+                    data[i].count = 100 * (data[i].count - min) / (max - min);
+                }
+            }
+            return data;
+        }
+    },
+
+    getHotestSpots: function (lowerBound) {
+        var hotest = [];
+        for (var i = 0; i < hotSpots.length; i++) {
+            if (hotSpots[i].count >= lowerBound) {
+                hotest.push(hotSpots[i]);
+            }
+        }
+        return hotest;
+    },
+
+    updateHotestSpots: function (spots) {
+        for (var i = 0; i < hotestSpotsMaker.length; i++) {
+            map.removeOverlay(hotestSpotsMaker[i]);
+        }
+        hotestSpotsMaker = [];
+        for (var i = 0; i < spots.length; i++) {
+            hotestSpotsMaker.push(addJumpingLandMark(spots[i]));
+        }
     },
 
     evaluateDuration: function (mapInfo, mQueryInfo) {
@@ -152,11 +357,56 @@ var Util = {
     }
 };
 
-var hotSpots = [];
+var core = {
+    getScore: function (originArray, destinationArray) {
+        var spots = [];
+        var sum, i, j;
+        for (i = 0; i < originArray.length; i++) {
+            sum = alpha;
+            for (j = 0; j < destinationArray.length; j++) {
+                sum += destinationArray[j].beta
+                * Util.distanceBetweenPoints(originArray[i], Util.coord2lnglat(destinationArray[j].coord));
+            }
+            spots.push({
+                lng: originArray[i].lng,
+                lat: originArray[i].lat,
+                count: sum
+            });
+        }
+        return spots;
+    },
+
+    caculate: function () {
+        var hasData = false;
+        var destinations = [];
+        for (var key in queryInfo.prefer) {
+            queryInfo.prefer[key] = [];
+            $('#' + key + ' li input').each(function () {
+                if ($(this).is(':checked')) {
+                    destinations.push(Util.getLocationById($(this).val()));
+                    hasData = true;
+                }
+            });
+        }
+
+        if (hasData === true) {
+            var points = Util.getGridPoints(southWest, northEast);
+            console.log("Points size: " + points.length);
+            hotSpots = Util.normalizeScore(core.getScore(points, destinations));
+        } else {
+            //alert("请先选择地点！");
+            hotSpots = [];
+        }
+
+        var hotestSpots = Util.getHotestSpots(99.5);
+        Util.updateHotestSpots(hotestSpots);
+        renderHeatmap();
+    }
+};
 
 //landmark相关
 
-var icon = new BMap.Icon('../img/anchor.png', new BMap.Size(20, 32), {
+var yellowMark = new BMap.Icon('./img/anchor.png', new BMap.Size(20, 32), {
     anchor: new BMap.Size(10, 30)
 });
 
@@ -174,12 +424,27 @@ var removeMarker = function (e, ee, marker) {
         var length = queryInfo.location.length;
         queryInfo.location = queryInfo.location.slice(0, pos).concat(queryInfo.location.slice(pos + 1, length));
         map.removeOverlay(marker);
-        alert(queryInfo.location.length);
+        // alert(queryInfo.location.length);
     }
 };
 
-function addLandMark(e) {
+function addJumpingLandMark(location) {
+    var point = new BMap.Point(location.lng, location.lat);
+    var marker = new BMap.Marker(point);
+    map.addOverlay(marker);
+    marker.setAnimation(BMAP_ANIMATION_BOUNCE);
+    return marker;
+}
+
+function addLandMark(e, title, icon) {
+
+    title = title || '';
+    icon = icon || yellowMark;
+
     var mkr = new BMap.Marker(e.point, {icon: icon});
+    mkr.addEventListener('click', function () {
+        this.openInfoWindow(new BMap.InfoWindow(title));
+    });
     map.addOverlay(mkr);
     var a = {};
     a.lng = e.point.lng;
@@ -189,30 +454,29 @@ function addLandMark(e) {
     //landmark.push(e.point.lng);
     queryInfo.location.push(a);
     var i = queryInfo.location.length;
-    mkr.enableDragging();
+    // mkr.enableDragging();
     mkr.addEventListener("dragend", function () {
         var p = mkr.getPosition();
         var pos = 0;
         for (var key in queryInfo.location) {
-            if ((a.lng == queryInfo.location[key].lng) && (a.lat == queryInfo.location[key].lat)) {
+            if ((a.lng === queryInfo.location[key].lng) && (a.lat === queryInfo.location[key].lat)) {
                 pos = key;
                 break;
             }
         }
-        console.log(parseInt(pos) + 1);
         queryInfo.location[parseInt(pos)] = {lng: p.lng, lat: p.lat};
         a.lng = p.lng;
         a.lat = p.lat;
     });
 
     //创建右键菜单
-    var deleteLandMarkMenu = new BMap.ContextMenu();
-    deleteLandMarkMenu.addItem(new BMap.MenuItem('删除', removeMarker.bind(mkr)));
-    mkr.addContextMenu(deleteLandMarkMenu);
+    // var deleteLandMarkMenu = new BMap.ContextMenu();
+    // deleteLandMarkMenu.addItem(new BMap.MenuItem('删除', removeMarker.bind(mkr)));
+    // mkr.addContextMenu(deleteLandMarkMenu);
     //alert(queryInfo.location.length);
     //alert(e.point.lng+","+e.point.lat);
 
-
+    return mkr;
 }
 
 var rightclickpoint;
@@ -220,16 +484,28 @@ function rightclick(e) {
     rightclickpoint = e;
 }
 
-map.addEventListener("rightclick", rightclick);
 var addLandMarkMenu = new BMap.ContextMenu();
 var addLandMarkMenuItem = [{
     text: '添加锚点',
     callback: function () {
-        addLandMark(rightclickpoint)
+        addLandMark(rightclickpoint);
     }
 }];
 addLandMarkMenu.addItem(new BMap.MenuItem(addLandMarkMenuItem[0].text, addLandMarkMenuItem[0].callback, 100));
 map.addContextMenu(addLandMarkMenu);
+
+// 取消右键菜单功能
+// map.addEventListener("rightclick", rightclick);
+
+map.addEventListener("moveend", function () {
+    renderHeatmap();
+});
+
+// map.addEventListener("zoomend", function(){    
+//     $('#gridCoordinate').html('当前级别：' + map.getZoom());
+//     renderHeatmap();
+// });
+
 if (!isSupportCanvas()) {
     alert('热力图目前只支持有canvas支持的浏览器,您所使用的浏览器不能使用热力图功能~');
 }
@@ -252,6 +528,10 @@ var heatmapOverlay = new BMapLib.HeatmapOverlay({"radius": 30});
 
 //渲染热力图
 function renderHeatmap() {
+    var config = {"radius": Util.getHotspotRadiusByZoomLevel(map.getZoom())};
+    // console.log(config);
+    map.removeOverlay(heatmapOverlay);
+    heatmapOverlay = new BMapLib.HeatmapOverlay(config);
     map.addOverlay(heatmapOverlay);
     heatmapOverlay.setDataSet({data: hotSpots, max: 100});
 }
@@ -286,16 +566,11 @@ function isSupportCanvas() {
 
 function showGridline() {
 
-    var southWest = {lng: 116.278054, lat: 39.836982};
-    var northEast = {lng: 116.496234, lat: 39.996691};
-    var gridSize = 0.00610799999999756; // 500m
-    var gridSizeLng = gridSize * 1.3;
-
     var i = 0;
-    while (southWest.lat + i * gridSize < northEast.lat) {
+    while (southWest.lat + i * gridSizeLat < northEast.lat) {
         var line = new BMap.Polyline([
-            new BMap.Point(southWest.lng, southWest.lat + i * gridSize),
-            new BMap.Point(northEast.lng, southWest.lat + i * gridSize)
+            new BMap.Point(southWest.lng, southWest.lat + i * gridSizeLat),
+            new BMap.Point(northEast.lng, southWest.lat + i * gridSizeLat)
         ], {strokeColor: "blue", strokeWeight: 2, strokeOpacity: 0.8});
         map.addOverlay(line);
         i++;
@@ -313,95 +588,16 @@ function showGridline() {
 
     map.addEventListener("click", function (e) {
 
-        var x = Math.floor((e.point.lng - southWest.lng) / gridSizeLng) + 1;
-        var y = Math.floor((e.point.lat - southWest.lat) / gridSize) + 1;
+        var x = Math.floor((e.point.lng - southWest.lng) / gridSizeLng);
+        var y = Math.floor((e.point.lat - southWest.lat) / gridSizeLat);
+        var id = Util.getGridId(e.point);
+        $('#gridCoordinate').html('&nbsp;&nbsp;坐标：(' + e.point.lng + ',&nbsp;' + e.point.lat + ')' +
+            '&nbsp;&nbsp;编号：' + id);
 
-        $('#gridCoordinate').html('(' + x + ',' + y + ')');
     });
 }
 
 !function () {
-
-    /**
-     * 条件筛选模块相关代码 start
-     * 条件筛选的数据
-     */
-    var tagData = [
-        {
-            "name": "饮食",
-            "value": "cater",
-            "data": [
-                {
-                    "name": "川菜",
-                    "value": "川菜"
-                },
-                {
-                    "name": "湘菜",
-                    "value": "湘菜"
-                },
-                {
-                    "name": "粤菜",
-                    "value": "粤菜"
-                },
-                {
-                    "name": "鲁菜",
-                    "value": "鲁菜 "
-                },
-                {
-                    "name": "东北菜",
-                    "value": "东北菜"
-                }
-            ]
-        },
-        {
-            "name": "娱乐",
-            "value": "entertainment",
-            "data": [
-                {
-                    "name": "KTV",
-                    "value": "KTV"
-                },
-                {
-                    "name": "电影",
-                    "value": "电影"
-                },
-                {
-                    "name": "台球",
-                    "value": "台球"
-                },
-                {
-                    "name": "书店",
-                    "value": "书店"
-                },
-                {
-                    "name": "酒吧",
-                    "value": "酒吧"
-                },
-                {
-                    "name": "咖啡厅",
-                    "value": "咖啡厅"
-                }
-            ]
-        },
-        {
-            "name": "运动",
-            "value": "sport",
-            "data": [
-                {
-                    "name": "健身",
-                    "value": "健身"
-                },
-                {
-                    "name": "游泳",
-                    "value": "游泳"
-                },
-                {
-                    "name": "篮球",
-                    "value": "篮球"
-                }
-            ]
-        }
-    ];
 
     for (var i in tagData) { //条件筛选的各个项
         var item = tagData[i],
@@ -410,7 +606,7 @@ function showGridline() {
             ul = $('<ul class="inline"></ul>');
         for (var j in data) { //各个项对应的各详细选项
             var subData = data[j];
-            $('<li><label class="checkbox"><input type="checkbox" value = ' + subData.value + '>' + subData.name + '</label></li>').appendTo(ul);
+            $('<li><label class="checkbox"><input type="checkbox" value ="' + subData.value + '"name="' + subData.name + '">' + subData.name + '</label></li>').appendTo(ul);
         }
         ul.appendTo($('<dd></dd>')).appendTo(dl);
         dl.appendTo($('#filterBox'));
@@ -476,19 +672,23 @@ function showGridline() {
 
     //绑定检索按钮事件
     $('#searchBtn').bind('click', function () {
-        if (queryInfo.location.length == 0) {
-            alert("no landmarks!");
-        }
-        else {
-            mapInfo.UpperleftLocation.lng = 116.323026;
-            mapInfo.UpperleftLocation.lat = 39.990074;
-            mapInfo.lngRange = 10;
-            mapInfo.latRange = 10;
-            mapInfo.resolution = 10;
-            //Util.evaluateDuration(mapInfo, queryInfo);
-            Util.collectInfoOfPosition({lng: 116.323026, lat: 39.990074}, queryInfo);
-        }
-        // Util.getDistance([116.42076,39.915251],[116.425867,39.918989]);
+        core.caculate();
+    });
+
+    $('#filterBox li input').each(function () {
+        $(this).click(function (event) {
+            if ($(this).is(':checked')) {
+                var location = Util.coord2lnglat(Util.getLocationById($(this).val()).coord);
+                var mkr = addLandMark({point: location}, $(this).attr('name'));
+                currentLandmark[$(this).val()] = mkr;
+            } else {
+                if (currentLandmark[$(this).val()] !== null) {
+                    map.removeOverlay(currentLandmark[$(this).val()]);
+                    currentLandmark[$(this).val()] = null;
+                }
+            }
+            core.caculate();
+        });
     });
 
     /**

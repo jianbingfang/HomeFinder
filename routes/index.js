@@ -3,6 +3,7 @@
 var express = require('express');
 var core = require('../src/service/core');
 var mapService = require('../src/service/mapService');
+var grid = require('../src/service/grid');
 
 var router = express.Router();
 
@@ -119,6 +120,14 @@ router.get('/duration/evaluate', function (req, res) {
         console.log('error: ' + e.message);
         res.send('error: ' + e.message);
     });
+});
+
+router.get('/test/grid', function(req, res){
+    var id = grid.getGridIdByCoordinate(req.query.coord);
+    var coord = grid.getGridCoordinateById(req.query.id);
+    console.log('id: ' + id);
+    console.log('coord: (' + coord.lng +', '+ coord.lat +')');
+    res.send({id: id, coord: coord});
 });
 
 module.exports = router;
