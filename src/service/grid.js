@@ -5,7 +5,7 @@
 
 var southWest = {lng: 116.213828, lat: 39.864778};
 var northEast = {lng: 116.555401, lat: 40.029763};
-var gridSizeLat = 0.00610799999999756; // 500m
+var gridSizeLat = 0.006108; // 500m
 var gridSizeLng = gridSizeLat * 1.3;
 var gridResolution = {
     lng: Math.floor((northEast.lng - southWest.lng) / gridSizeLng),
@@ -43,8 +43,12 @@ exports.getGridCoordinateById = function (id) {
     var y = Math.floor(id / gridResolution.lng);
 
     return {
-        lng: southWest.lng + gridSizeLng * x + gridSizeLng / 2,
-        lat: southWest.lat + gridSizeLat * y + gridSizeLat / 2
+        lng: (southWest.lng + gridSizeLng * x + gridSizeLng / 2).toFixed(6),
+        lat: (southWest.lat + gridSizeLat * y + gridSizeLat / 2).toFixed(6)
     };
 
+};
+
+exports.getGridNum = function () {
+    return (gridResolution.lng * gridResolution.lat);
 };

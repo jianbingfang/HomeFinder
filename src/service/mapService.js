@@ -126,19 +126,21 @@ var getDistanceRow = function (location, landmarks, column, result, succCallBack
     var originString = "origins=" + location.lat + "," + location.lng;
     var destinationString = "destinations=" + landmarks[column].lat + "," + landmarks[column].lng;
     var url = bmapDirectionHost + "?ak=" + ak + "&output=json" + "&" + originString + "&" + destinationString;
-    console.log("column=" + column + ";url=" + url);
+    //console.log("column=" + column + ";url=" + url);
     nodegrass.get(url, function (data, status, headers) {
         var mData = JSON.parse(data);
-        console.log("getDistanceRow:" + status);
+        //console.log("getDistanceRow:" + status);
         if (status === 200) {
             if (column + 1 < landmarks.length) {
-                console.log(mData.result.elements[0].duration.text);
-                result += mData.result.elements[0].duration.text + ',';
+                //console.log(mData.result.elements[0].duration.text);
+                //result += mData.result.elements[0].duration.text + ',';
+                result.push(mData.result.elements[0]);
                 getDistanceRow(location, landmarks, column + 1, result, succCallBack, failCallback);
             }
             else if (column + 1 === landmarks.length) {
-                result += mData.result.elements[0].duration.text + ',';
-                console.log(result);
+                //result += mData.result.elements[0].duration.text + ',';
+                //console.log(result);
+                result.push(mData.result.elements[0]);
                 succCallBack(result);
             }
         } else {
@@ -166,20 +168,21 @@ var getDistanceRowNoneRecursively = function (location, landmarks, result, succC
     }
 
     var url = bmapDirectionHost + "?ak=" + ak + "&output=json" + "&" + originString + "&" + destinationString;
-    console.log(url);
+    //console.log(url);
 
     nodegrass.get(url, function (data, status, headers) {
         var mData = JSON.parse(data);
-        console.log("Service query [" + mData.type + "]:" + status);
-        console.log(url);
+        //console.log("Service query [" + mData.type + "]:" + status);
+        //console.log(url);
         if (status === 200) {
             //mData.type = type;
-            console.log(mData.result.elements);
+            //console.log(mData.result.elements);
             var durationResult = [];
             for (var key in mData.result.elements) {
                 if (mData.result.elements.hasOwnProperty(key)) {
-                    console.log(key + ":" + mData.result.elements[key].duration.text.replace("分钟", ""));
-                    durationResult.push(parseInt(mData.result.elements[key].duration.text.replace("分钟", "")));
+                    //console.log(key + ":" + mData.result.elements[key].duration.text.replace("分钟", ""));
+                    //durationResult.push(parseInt(mData.result.elements[key].duration.text.replace("分钟", "")));
+                    durationResult.push(mData.result.elements[key]);
                 }
             }
             succCallBack(durationResult);
@@ -210,18 +213,18 @@ var evaluateDuration = function (params, succCallBack, failCallback) {
 
 var getDuration = function (origin, destinations, succCallBack, failCallback) {
     var result = [];
-    console.log("length:" + destinations.length);
+    //console.log("length:" + destinations.length);
     if (destinations.length > 5) {
         getDistanceRow(origin, destinations, 0, result, succCallBack, failCallback);
     } else {
-        console.log("none recursively");
+        //console.log("none recursively");
         getDistanceRowNoneRecursively(origin, destinations, result, succCallBack, failCallback);
     }
 
 };
 
 var getDistance = function (params, succCallBack, failCallback) {
-    //params=['oringin':[[lat11,lng11],[lat12,lng12],....],'destination':[[lat21,lng21],[lat22,lng22],...]]
+    //params=['origin':[[lat11,lng11],[lat12,lng12],....],'destination':[[lat21,lng21],[lat22,lng22],...]]
     var type = params.type;
 
     var originString = "origins=";

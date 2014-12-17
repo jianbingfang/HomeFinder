@@ -4,6 +4,7 @@ var express = require('express');
 var core = require('../src/service/core');
 var mapService = require('../src/service/mapService');
 var grid = require('../src/service/grid');
+var fs = require('fs');
 
 var router = express.Router();
 
@@ -122,12 +123,45 @@ router.get('/duration/evaluate', function (req, res) {
     });
 });
 
-router.get('/test/grid', function(req, res){
+router.get('/test/grid', function (req, res) {
     var id = grid.getGridIdByCoordinate(req.query.coord);
     var coord = grid.getGridCoordinateById(req.query.id);
     console.log('id: ' + id);
-    console.log('coord: (' + coord.lng +', '+ coord.lat +')');
+    console.log('coord: (' + coord.lng + ', ' + coord.lat + ')');
     res.send({id: id, coord: coord});
+});
+
+router.get('/record', function (req, res) {
+    var i, j, origin, destinations, num;
+    num = grid.getGridNum();
+    //num = 10;
+    for (i = num - 2; i >= 0; i--) {
+        origin = grid.getGridCoordinateById(i);
+        destinations = [];
+        for (j = i + 1; j < num; j++) {
+            destinations.push(grid.getGridCoordinateById(j));
+        }
+        //console.log('==============================');
+        //console.log('****    origin    ****');
+        //console.log(origin);
+        //console.log('**** destinations ****');
+        //console.log(destinations);
+        //console.log();
+        mapService.getDuration(origin, destinations, function (durationArray) {
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> size: ' + durationArray.length);
+            fs.writeFile('./data/' + (num - durationArray.length) + '.json', JSON.stringify(durationArray), function(err){
+                if(err){
+                    console.log('write file error: ' + err);
+                }
+            });
+            //console.log(durationArray);
+            //console.log('------------------------------');
+        }, function (message) {
+            console.log("mapService.getDuration error: " + message);
+        });
+    }
+
+    res.send('ok');
 });
 
 module.exports = router;
