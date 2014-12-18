@@ -11,6 +11,7 @@ var util = require('./util');
 var bmapPlaceHost = "http://api.map.baidu.com/place/v2/search";
 var bmapDirectionHost = "http://api.map.baidu.com/direction/v1/routematrix";
 var ak = 'Wu85qkU4ZK6bH3fcNhp453dL';
+//var ak = '0Ff69095ff2eba69383ca1e2979c1ef3';
 
 /**
  * 搜索附近POI信息

@@ -133,9 +133,9 @@ router.get('/test/grid', function (req, res) {
 
 router.get('/record', function (req, res) {
     var i, j, origin, destinations, num;
-    num = grid.getGridNum();
+    num = grid.getGridNum();    // num : 1161
     //num = 10;
-    for (i = num - 2; i >= 0; i--) {
+    for (i = 1000; i >= 1000; i--) {
         origin = grid.getGridCoordinateById(i);
         destinations = [];
         for (j = i + 1; j < num; j++) {
@@ -148,8 +148,8 @@ router.get('/record', function (req, res) {
         //console.log(destinations);
         //console.log();
         mapService.getDuration(origin, destinations, function (durationArray) {
-            console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> size: ' + durationArray.length);
-            fs.writeFile('./data/' + (num - durationArray.length) + '.json', JSON.stringify(durationArray), function(err){
+            console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> file: ' + (num - durationArray.length - 1) + '.json');
+            fs.writeFile('./data/' + (num - durationArray.length - 1) + '.json', JSON.stringify(durationArray), function(err){
                 if(err){
                     console.log('write file error: ' + err);
                 }
@@ -161,7 +161,7 @@ router.get('/record', function (req, res) {
         });
     }
 
-    res.send('ok');
+    res.send(new Date());
 });
 
 module.exports = router;
